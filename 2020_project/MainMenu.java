@@ -39,8 +39,8 @@ public class MainMenu extends Application {
     System.out.println(javafx.scene.text.Font.getFamilies());
     
 
-    Image i7 = new Image("file:///C:/Users/notbe/Desktop/CREATESERVER.png");
-    Image i8 = new Image("file:///C:/Users/notbe/Desktop/CREATESERVERPRESSED.png");
+    Image i7 = new Image("file:CREATESERVER.png");
+    Image i8 = new Image("file:CREATESERVERPRESSED.png");
     iv4 = new ImageView(i7);
     iv4.setLayoutX(175);
     iv4.setLayoutY(108);
@@ -53,8 +53,8 @@ public class MainMenu extends Application {
     	iv4.setImage(i7);
     });
      
-    Image i5 = new Image("file:///C:/Users/notbe/Desktop/JOINSERVER.png");
-    Image i6 = new Image("file:///C:/Users/notbe/Desktop/JOINSERVERPRESSED.png");
+    Image i5 = new Image("file:JOINSERVER.png");
+    Image i6 = new Image("file:JOINSERVERPRESSED.png");
     iv3 = new ImageView(i5);
     iv3.setLayoutX(175);
     iv3.setLayoutY(198);
@@ -67,8 +67,8 @@ public class MainMenu extends Application {
     	iv3.setImage(i5);
     });
     
-    Image i3 = new Image("file:///C:/Users/notbe/Desktop/OPTIONS.png");
-    Image i4 = new Image("file:///C:/Users/notbe/Desktop/OPTIONSPRESSED.png");
+    Image i3 = new Image("file:OPTIONS.png");
+    Image i4 = new Image("file:OPTIONSPRESSED.png");
     iv2 = new ImageView(i3);
     iv2.setLayoutX(175);
     iv2.setLayoutY(288);
@@ -81,8 +81,8 @@ public class MainMenu extends Application {
     	iv2.setImage(i3);
     });
     
-    Image i1 = new Image("file:///C:/Users/notbe/Desktop/NEWEXIT.png");
-    Image i2 = new Image("file:///C:/Users/notbe/Desktop/NEWEXITPRESSED.png");
+    Image i1 = new Image("file:NEWEXIT.png");
+    Image i2 = new Image("file:NEWEXITPRESSED.png");
     iv1 = new ImageView(i1);
     iv1.setLayoutX(175);
     iv1.setLayoutY(378);
