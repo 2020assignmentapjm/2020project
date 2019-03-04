@@ -1,150 +1,212 @@
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.event.EventHandler;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
-import java.io.File;
+public class MainMenu extends Application {
+
+    private static final Font FONT = Font.font("", FontWeight.BOLD, 18);
+
+    private VBox menuBox;
+    private VBox menuBox2;
+    private VBox menuBox3;
+    private int currentItem = 0;
+
+    private int messages = 0;
+
+    private ScheduledExecutorService bgThread = Executors.newSingleThreadScheduledExecutor();
+
+    private Parent createContent() {
+        Pane root = new Pane();
+        root.setPrefSize(900, 600);
+
+        Rectangle bg = new Rectangle(900, 600);
 
 
-public class MainMenu extends Application 
-{
-  ImageView iv1;
-  ImageView iv2;
-  ImageView iv3;
-  ImageView iv4;
-  ImageView iv5;
-  ImageView iv6;
-  ImageView iv7;
-  ImageView iv8;
-  
-  @Override // Override the start method in the Application class
-  public void start(Stage primaryStage) {
-    // Create a pane and set its properties
-    Pane pane = new Pane();
-    /*
-    String musicFile = "dwc.mp3";     // For Music
-    Media sound = new Media(new File(musicFile).toURI().toString()); 
-    MediaPlayer mediaPlayer = new MediaPlayer(sound);
-    mediaPlayer.play();
-    System.out.println(javafx.scene.text.Font.getFamilies());
-    */
-	
-	Image i13 = new Image("file:metalpane.jpg");
-    iv9 = new ImageView(i13);
-    iv9.setLayoutX(0);
-    iv9.setLayoutY(0);
-    iv9.setFitHeight(600);
-    iv9.setFitWidth(600);
-    
-    Image i12 = new Image("file:BYAPJM.png");
-    iv8 = new ImageView(i12);
-    iv8.setLayoutX(121);
-    iv8.setLayoutY(76);
-    iv8.setFitHeight(78);
-    iv8.setFitWidth(350);
-    
-    Image i11 = new Image("file:10jack.jpg");
-    iv7 = new ImageView(i11);
-    iv7.setLayoutX(420);
-    iv7.setLayoutY(168);
-    iv7.setFitHeight(250);
-    iv7.setFitWidth(180);
-    
-    Image i10 = new Image("file:pileofchips.jpg");
-    iv6 = new ImageView(i10);
-    iv6.setLayoutX(0);
-    iv6.setLayoutY(168);
-    iv6.setFitHeight(250);
-    iv6.setFitWidth(175);
-    
-    Image i9 = new Image("file:TITLE.png");
-    iv5 = new ImageView(i9);
-    iv5.setLayoutX(121);
-    iv5.setLayoutY(-8);
-    iv5.setFitHeight(85);
-    iv5.setFitWidth(350);
+        
+        MenuItem itemExit = new MenuItem("EXIT");
+        itemExit.setOnActivate(() -> System.exit(0));
 
-    Image i7 = new Image("file:CREATESERVER.png");
-    Image i8 = new Image("file:CREATESERVERPRESSED.png");
-    iv4 = new ImageView(i7);
-    iv4.setLayoutX(175);
-    iv4.setLayoutY(148);
-    iv4.setFitHeight(100);
-    iv4.setFitWidth(250);
-    iv4.setOnMousePressed(e -> { 
-    	iv4.setImage(i8);
-     });
-    iv4.setOnMouseReleased(e -> { 
-    	iv4.setImage(i7);
-    });
-     
-    Image i5 = new Image("file:JOINSERVER.png");
-    Image i6 = new Image("file:JOINSERVERPRESSED.png");
-    iv3 = new ImageView(i5);
-    iv3.setLayoutX(175);
-    iv3.setLayoutY(238);
-    iv3.setFitHeight(100);
-    iv3.setFitWidth(250);
-    iv3.setOnMousePressed(e -> { 
-    	iv3.setImage(i6);
-     });
-    iv3.setOnMouseReleased(e -> { 
-    	iv3.setImage(i5);
-    });
+        menuBox = new VBox(10,
+        		new MenuItem("PLAY"),
+                new MenuItem("CREATE SERVER"),
+                new MenuItem("JOIN SERVER"),
+                new MenuItem("OPTIONS"),
+                new MenuItem("CREDITS"),
+                itemExit);
+        menuBox.setAlignment(Pos.TOP_CENTER);
+        menuBox.setTranslateX(360);
+        menuBox.setTranslateY(200);
+        
+        menuBox2 = new VBox(10, new MenuItem("CSCI2020U PROJECT"));
+        menuBox2.setAlignment(Pos.TOP_CENTER);
+        menuBox2.setTranslateX(340);
+        menuBox2.setTranslateY(100);
+        
+        menuBox3 = new VBox(10, new MenuItem("TEXAS HOLD-EM"));
+        menuBox3.setAlignment(Pos.TOP_CENTER);
+        menuBox3.setTranslateX(355);
+        menuBox3.setTranslateY(140);
+
+
+        getMenuItem(0).setActive(true);
+        root.getChildren().addAll(bg,menuBox, menuBox2, menuBox3);
+        return root;
+    }
     
-    Image i3 = new Image("file:OPTIONS.png");
-    Image i4 = new Image("file:OPTIONSPRESSED.png");
-    iv2 = new ImageView(i3);
-    iv2.setLayoutX(175);
-    iv2.setLayoutY(328);
-    iv2.setFitHeight(100);
-    iv2.setFitWidth(250);
-    iv2.setOnMousePressed(e -> { 
-    	iv2.setImage(i4);
-     });
-    iv2.setOnMouseReleased(e -> { 
-    	iv2.setImage(i3);
-    });
-    
-    Image i1 = new Image("file:NEWEXIT.png");
-    Image i2 = new Image("file:NEWEXITPRESSED.png");
-    iv1 = new ImageView(i1);
-    iv1.setLayoutX(175);
-    iv1.setLayoutY(408);
-    iv1.setFitHeight(100);
-    iv1.setFitWidth(250);
-    iv1.setOnMousePressed(e -> { 
-    	iv1.setImage(i2);
-     });
-    iv1.setOnMouseReleased(e -> { 
-    	iv1.setImage(i1);
-    	primaryStage.close();
-    });
-    pane.getChildren().addAll(iv1,iv2,iv3,iv4,iv5,iv6,iv7,iv8);
-    primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-        public void handle(WindowEvent we) {
+    private Node createLeftContent() {
+        final Text inbox = new Text("");
+        inbox.setFill(Color.WHITE);
+
+        
+
+        return inbox;
+    }
+
+
+    private Node createMiddleContent() {
+        String title = "CSCI2020U Project";
+        HBox letters = new HBox(0);
+        letters.setAlignment(Pos.CENTER);
+        for (int i = 0; i < title.length(); i++) {
+            Text letter = new Text(title.charAt(i) + "");
+            letter.setFont(FONT);
+            letter.setFill(Color.WHITE);
+            letters.getChildren().add(letter);
         }
-    });        
-    primaryStage.close();
-    Scene scene = new Scene(pane, 600, 600);
-    primaryStage.setScene(scene); // Place the scene in the stage
-    primaryStage.show(); // Display the stage
-  }
 
-  /**
-   * The main method is only needed for the IDE with limited
-   * JavaFX support. Not needed for running from the command line.
-   */
-  public static void main(String[] args) {
-    launch(args);
-  }
+        return letters;
+    }
+
+
+    private MenuItem getMenuItem(int index) {
+        return (MenuItem)menuBox.getChildren().get(index);
+    }
+
+    private static class ContentFrame extends StackPane {
+        public ContentFrame(Node content) {
+            setAlignment(Pos.CENTER);
+
+            Rectangle frame = new Rectangle(200, 200);
+            frame.setArcWidth(25);
+            frame.setArcHeight(25);
+            frame.setStroke(Color.WHITESMOKE);
+
+            getChildren().addAll(frame, content);
+        }
+    }
+
+    private static class MenuItem extends HBox {
+        private TriCircle c1 = new TriCircle(), c2 = new TriCircle();
+        private Text text;
+        private Runnable script;
+
+        public MenuItem(String name) {
+            super(15);
+            setAlignment(Pos.CENTER);
+
+            text = new Text(name);
+            text.setFont(FONT);
+            text.setEffect(new GaussianBlur(2));
+
+            getChildren().addAll(c1, text, c2);
+            setActive(false);
+            setOnActivate(() -> System.out.println(name + " activated"));
+        }
+
+        public void setActive(boolean b) {
+            c1.setVisible(b);
+            c2.setVisible(b);
+            text.setFill(b ? Color.WHITE : Color.GREY);
+        }
+
+        public void setOnActivate(Runnable r) {
+            script = r;
+        }
+
+        public void activate() {
+            if (script != null)
+                script.run();
+        }
+    }
+
+    private static class TriCircle extends Parent {
+        public TriCircle() {
+            Shape shape1 = Shape.subtract(new Circle(5), new Circle(2));
+            shape1.setFill(Color.WHITE);
+
+            Shape shape2 = Shape.subtract(new Circle(5), new Circle(2));
+            shape2.setFill(Color.WHITE);
+            shape2.setTranslateX(5);
+
+            Shape shape3 = Shape.subtract(new Circle(5), new Circle(2));
+            shape3.setFill(Color.WHITE);
+            shape3.setTranslateX(2.5);
+            shape3.setTranslateY(-5);
+
+            getChildren().addAll(shape1, shape2, shape3);
+
+            setEffect(new GaussianBlur(2));
+        }
+    }
+
+    
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        Scene scene = new Scene(createContent());
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.UP) {
+                if (currentItem > 0) {
+                    getMenuItem(currentItem).setActive(false);
+                    getMenuItem(--currentItem).setActive(true);
+                }
+            }
+
+            if (event.getCode() == KeyCode.DOWN) {
+                if (currentItem < menuBox.getChildren().size() - 1) {
+                    getMenuItem(currentItem).setActive(false);
+                    getMenuItem(++currentItem).setActive(true);
+                }
+            }
+
+            if (event.getCode() == KeyCode.ENTER) {
+                getMenuItem(currentItem).activate();
+            }
+        });
+
+        primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(event -> {
+            bgThread.shutdownNow();
+        });
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 }
