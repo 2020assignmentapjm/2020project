@@ -37,6 +37,13 @@ public class MainMenu extends Application
     mediaPlayer.play();
     System.out.println(javafx.scene.text.Font.getFamilies());
     */
+	
+	Image i13 = new Image("file:metalpane.jpg");
+    iv9 = new ImageView(i13);
+    iv9.setLayoutX(0);
+    iv9.setLayoutY(0);
+    iv9.setFitHeight(600);
+    iv9.setFitWidth(600);
     
     Image i12 = new Image("file:BYAPJM.png");
     iv8 = new ImageView(i12);
