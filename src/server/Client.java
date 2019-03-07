@@ -39,6 +39,7 @@ public class Client extends Thread{
      * "run" method extended from Thread
      * It creates an input and output stream for the client and keeps the client running until interrupted
      */
+    @Override
     public void run(){
         if (client.isConnected()){
             System.out.println("Client connected on client side.");

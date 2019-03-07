@@ -60,6 +60,7 @@ public class Server extends Thread {
      * "run" method extended from Thread
      * It accepts and stores the clients, creates an input and output stream for clients and keeps the server running until interrupted
      */
+    @Override
     public void run(){
 
         try {
