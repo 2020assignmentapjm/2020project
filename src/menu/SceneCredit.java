@@ -74,9 +74,9 @@ public class SceneCredit {
     }
 
     /**
-     * Returns the scene of the main menu
+     * Returns the scene that is currently used
      * 
-     * @return scene of the main menu
+     * @return the scene that is currently used
      */
     public Scene getScene() {
         return scene;
