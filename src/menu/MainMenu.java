@@ -1,9 +1,15 @@
 package menu;
 
+import menu.scenes.ScenePlay;
+import menu.scenes.SceneOption;
+import menu.scenes.SceneHelp;
+import menu.scenes.SceneCredit;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.File;
+
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Pane;
@@ -49,7 +55,7 @@ public class MainMenu extends Application {
 
         // Event handlers
         itemPlay.setOnActivate(() -> {
-            primaryStage.setScene(scenePlay.getScene());
+            primaryStage.setScene(ScenePlay.getScene());
             scenePlay.setStage(primaryStage);
         });
 
@@ -68,7 +74,7 @@ public class MainMenu extends Application {
          */
 
         itemCredit.setOnActivate(() -> {
-            primaryStage.setScene(sceneCredit.getScene());
+            primaryStage.setScene(SceneCredit.getScene());
             sceneCredit.setStage(primaryStage);
         });
 

@@ -60,7 +60,7 @@ public class MenuItem extends HBox {
     public void setActive(boolean state) {
         chip1.setVisible(state);
         chip2.setVisible(state);
-        text.setFill(state ? Color.rgb(220, 76, 70) : Color.WHITE);
+        text.setFill(state ? Color.rgb(242, 87, 54) : Color.WHITE);
     }
 
     /**
