@@ -133,6 +133,6 @@ public class Client extends Thread{
             return;
         }
 
-        out.println(num);
+        out.write(num);
     }
 }

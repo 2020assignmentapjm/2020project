@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 public class Server extends Thread {
 
@@ -30,7 +32,7 @@ public class Server extends Thread {
      * Creates a server socket with a defined number of players and a port number
      * Also creates client and I/O arrays for server access and communication
      * @param playerNum number of players that will connect to the server
-     * @param port port number
+     * @param port port number to connect
      */
     public Server(int playerNum, int port) {
 
@@ -49,8 +51,8 @@ public class Server extends Thread {
 
         clients = new Socket[PLAYER_NUM];       // Create client array
 
-        in = new BufferedReader[PLAYER_NUM];    // Create input array
-        out = new PrintWriter[PLAYER_NUM];      // Create output array
+        in = new BufferedReader[PLAYER_NUM];    // Create input stream array for clients
+        out = new PrintWriter[PLAYER_NUM];      // Create output stream array for clients
 
         clientCons = 0;
     }
@@ -186,6 +188,30 @@ public class Server extends Thread {
             return;
         }
 
-        out[clientIdx].println(num);
+        out[clientIdx].write(num);
+    }
+
+    
+    /**
+     * Returns the number of clients connected to the server
+     * 
+     * @return number of connections
+     */
+    public int getclientCons(){
+        return clientCons;
+    }
+
+    /**
+     * Returns the IP address of the server
+     * 
+     * @return IP address in a string format
+     */
+    public String getHost(){
+        try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+        }
+        return "error";
     }
 }
