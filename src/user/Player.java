@@ -1,70 +1,106 @@
 package user;
 
-public class Player
-{
-	public String playerName;
-	public int currentMoney;
-	public int playerPosition;
-	//money attribute, chip amount, name, file io stats, profile, fold,call, raise methods.
-	public Player(String playerName, int currentMoney, int playerPosition)
-	{
+public class Player {
+	// Variables
+	private String playerName;
+	private int currentMoney;
+	private int playerPosition;
+	private boolean isCurrent;
+	private boolean isBigBlind;
+	private boolean isSmallBlind;
+
+	// money attribute, chip amount, name, file io stats, profile, fold,call, raise
+	// methods.
+	public Player(String playerName, int currentMoney, int playerPosition) {
 		this.playerName = playerName;
 		this.currentMoney = currentMoney;
 		this.playerPosition = playerPosition;
+		this.isCurrent = false;
+		this.isBigBlind = false;
+		this.isSmallBlind = false;
 	}
 	
-	public String getPlayerName()
-	{
-		return this.playerName;
+	/**
+	 * @return the isCurrent
+	 */
+	public boolean isCurrent() {
+		return isCurrent;
 	}
-	
-	public void setPlayerName(String newPlayerName)
-	{
-		this.playerName = newPlayerName;
+
+	/**
+	 * @param isCurrent the isCurrent to set
+	 */
+	public void setCurrent(boolean isCurrent) {
+		this.isCurrent = isCurrent;
 	}
-	
-	public int CurrentMoney()
-	{
-		return this.currentMoney;
+
+	/**
+	 * @return the isBigBlind
+	 */
+	public boolean isBigBlind() {
+		return isBigBlind;
 	}
-	
-	public void setCurrentMoney(int newMoney)
-	{
-		this.currentMoney = newMoney;
+
+	/**
+	 * @param isBigBlind the isBigBlind to set
+	 */
+	public void setBigBlind(boolean isBigBlind) {
+		this.isBigBlind = isBigBlind;
 	}
-	
-	public int getPlayerPosition()
-	{
-		return this.playerPosition;
+
+	/**
+	 * @return the isSmallBlind
+	 */
+	public boolean isSmallBlind() {
+		return isSmallBlind;
 	}
-	
-	public void setPlayerPosition(int newPlayerPosition)
-	{
-		this.playerPosition = newPlayerPosition;
+
+	/**
+	 * @param isSmallBlind the isSmallBlind to set
+	 */
+	public void setSmallBlind(boolean isSmallBlind) {
+		this.isSmallBlind = isSmallBlind;
 	}
-	
-	public void stats()
-	{
-		//fill
+
+	/**
+	 * @return the playerName
+	 */
+	public String getPlayerName() {
+		return playerName;
 	}
-	
-	public void fold()
-	{
-		//fill
+
+	/**
+	 * @param playerName the playerName to set
+	 */
+	public void setPlayerName(String playerName) {
+		this.playerName = playerName;
 	}
-	
-	public void call()
-	{
-		//fill
+
+	/**
+	 * @return the currentMoney
+	 */
+	public int getCurrentMoney() {
+		return currentMoney;
 	}
-	
-	public void raise()
-	{
-		//fill
+
+	/**
+	 * @param currentMoney the currentMoney to set
+	 */
+	public void setCurrentMoney(int currentMoney) {
+		this.currentMoney = currentMoney;
 	}
-	
-	public void profile()
-	{
-		
+
+	/**
+	 * @return the playerPosition
+	 */
+	public int getPlayerPosition() {
+		return playerPosition;
+	}
+
+	/**
+	 * @param playerPosition the playerPosition to set
+	 */
+	public void setPlayerPosition(int playerPosition) {
+		this.playerPosition = playerPosition;
 	}
 }
