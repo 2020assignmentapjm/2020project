@@ -4,11 +4,13 @@ public class Player
 {
 	public String playerName;
 	public int currentMoney;
+	public int playerPosition;
 	//money attribute, chip amount, name, file io stats, profile, fold,call, raise methods.
-	public Player(String playerName, int currentMoney)
+	public Player(String playerName, int currentMoney, int playerPosition)
 	{
 		this.playerName = playerName;
 		this.currentMoney = currentMoney;
+		this.playerPosition = playerPosition;
 	}
 	
 	public String getPlayerName()
@@ -29,6 +31,16 @@ public class Player
 	public void setCurrentMoney(int newMoney)
 	{
 		this.currentMoney = newMoney;
+	}
+	
+	public int getPlayerPosition()
+	{
+		return this.playerPosition;
+	}
+	
+	public void setPlayerPosition(int newPlayerPosition)
+	{
+		this.playerPosition = newPlayerPosition;
 	}
 	
 	public void stats()
