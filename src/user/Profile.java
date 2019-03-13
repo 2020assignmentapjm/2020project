@@ -2,7 +2,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.io.*;
 import java.lang.*;
-public class Profile {
+public class Profile{
   /*
 
   Mostly statistics for player file i/o, also has game chips, handsplayed, handswon
@@ -18,16 +18,19 @@ public class Profile {
     private int gameHands;
     private int gameWonHands;
     private static List<Integer> CareerStats;
-    public getGameChips(){
+    public int getGameChips(){
         return gameChips;
     }
-    public int updateTurn(int change, int won){
+    public void updateTurn(int change, int won){
         gameChips = gameChips + change;
         gameHands++;
         gameWonHands = gameWonHands + won;
     }
-    public void getGameHands(){return GameHands;}
-    public void getGameWonHands(){return }
+    public int getGameHands(){return gameHands;}
+    public int getCareerChips() {return CareerChips;}
+    public int getCareerHands() {return CareerHands;}
+    public int getCareerHandsWon() {return CareerWonHands;}
+    public int getGameWonHands(){return gameWonHands;}
     public List<Integer> getCareerStats(){return CareerStats;};
     public Profile(){
         File playerStats = new File("PlayerStats.txt");
@@ -74,4 +77,8 @@ public class Profile {
     public List<Integer> getStats(){
         return CareerStats;
     }
+  /* Test function incase of errors
+    public static void main (String [] args){
+      Profile p = new Profile();
+    }*/
 }
