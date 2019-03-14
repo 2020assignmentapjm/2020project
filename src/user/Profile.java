@@ -74,16 +74,16 @@ public class Profile{
             }
         }
     }
-    private void updateCareerStats(int a, int b, int c){
-        CareerHands = b;
-        CareerWonHands = c;
-        CareerChips = a;
+    public void updateCareerStats(int a, int b, int c){
+        CareerChips = CareerChips+a;
+        CareerHands = CareerHands+b;
+        CareerWonHands = CareerWonHands+c;
         CareerStats.set(0,CareerChips);
         CareerStats.set(1,CareerHands);
         CareerStats.set(2,CareerWonHands);
         writeStats();
     }
-    public void writeStats(){
+    private void writeStats(){
         try {
             PrintWriter p = new PrintWriter("PlayerStats.txt");
             p.print(CareerChips + "," + CareerHands + "," + CareerWonHands + ",");
