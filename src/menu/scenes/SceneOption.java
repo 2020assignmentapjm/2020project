@@ -1,6 +1,9 @@
 package menu.scenes;
 
-import menu.*;
+import menu.MenuItem;
+import menu.MainMenu;
+import user.Profile;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.File;
@@ -10,8 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 
 public class SceneOption {
     /*
@@ -41,7 +43,7 @@ public class SceneOption {
         private final int SCENE_WIDTH = 900;
         private final int SCENE_HEIGHT = 600;
         private final int VBOX_SPACING = 10;
-        private final String BACKGROUND_IMG_PATH = "../../images/bck.jpg";
+        private final String BACKGROUND_IMG_PATH = "../images/bck.jpg";
 
         public SceneOption() {
 
@@ -63,7 +65,7 @@ public class SceneOption {
             opt1.setFont(Font.font("Berlin Sans FB", 14));
             opt1.setStyle("-fx-text-fill: white");
             opt1.setOnMousePressed(e -> {
-                c.setImg("../../images/c1.png");
+                c.setImg("../images/c1.png");
                 Image img = new Image("file:"+c.getImg(), 72, 96, false, false);
                 Card.setImage(img);
             });
@@ -73,7 +75,7 @@ public class SceneOption {
             opt2.setFont(Font.font("Berlin Sans FB", 14));
             opt2.setStyle("-fx-text-fill: white");
             opt2.setOnAction(e -> {
-                c.setImg("../../images/c2.jpg");
+                c.setImg("../images/c2.jpg");
                 Image img = new Image("file:"+c.getImg(), 72, 96, false, false);
                 Card.setImage(img);
             });
@@ -83,7 +85,7 @@ public class SceneOption {
             opt3.setFont(Font.font("Berlin Sans FB", 14));
             opt3.setStyle("-fx-text-fill: white");
             opt3.setOnMouseClicked(e -> {
-                c.setImg("../../images/c3.png");
+                c.setImg("../images/c3.png");
                 Image img = new Image("file:"+c.getImg(), 72, 96, false, false);
                 Card.setImage(img);
             });
@@ -154,7 +156,7 @@ public class SceneOption {
             private int x;
             private int y;
             private String img;
-            public CardImage(){this.img="../../images/backCard.png";}
+            public CardImage(){this.img="../images/backCard.png";}
             public void setImg(String location){
                 this.img = location;
             }
