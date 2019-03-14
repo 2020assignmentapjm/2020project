@@ -1,3 +1,7 @@
+package menu.scenes;
+
+import menu.*;
+import user.Profile;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.File;
@@ -7,7 +11,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.control.*;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 
 public class SceneOption {
     /*

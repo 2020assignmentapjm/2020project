@@ -28,12 +28,11 @@ public class SceneLoadingScreen {
         // Main pane
         Pane pane = new Pane();
 
-        // Scenes
-        // TODO: load game scene
-
-        Server server = new Server(playerNum, 200);
+        Server server = new Server(playerNum, 2000);
         server.start();                             // Waits until all players are connected
 
+        // Scenes
+        // TODO: load game scene with server param
 
         // Show server IP address
         MenuItem itemHost = new MenuItem("HOST: " + server.getHost(), 25);
@@ -64,9 +63,9 @@ public class SceneLoadingScreen {
         Pane pane = new Pane();
 
         // Scenes
-        // TODO: load game scene
+        // TODO: load game scene with client param
 
-        Client client = new Client(host, 200);
+        Client client = new Client(host, 2000);
         client.start();
 
         // When all connected:
