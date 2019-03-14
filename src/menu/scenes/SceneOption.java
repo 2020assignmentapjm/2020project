@@ -1,3 +1,5 @@
+package menu.scenes;
+import menu.*;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.File;
