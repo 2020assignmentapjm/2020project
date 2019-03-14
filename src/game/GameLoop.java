@@ -12,6 +12,7 @@ public class GameLoop {
     private boolean gameEnded;
     private boolean roundEnded;
     private int roundNum;
+    private int amountToCall;
 
     // Constant
     private final int INITIAL_MONEY = 10000;
@@ -20,6 +21,7 @@ public class GameLoop {
     private final int INITIAL_BIG_BLIND = 100;
     private final int PLAYER_NUM;
     private final int BLIND_RAISE_ROUND_NUM = 5;
+    private final int BLIND_RAISE_RATIO = 2;
 
     public GameLoop(int playerNum) {
 
@@ -34,9 +36,12 @@ public class GameLoop {
 
         while(!gameEnded){
 
+            amountToCall = bigBlind;
+
             while(!roundEnded){
 
-                //players[currentPlayer].play();
+                players[currentPlayer].play(amountToCall);
+                // decision is called by UI
 
 
                 players[currentPlayer].setCurrent(false);
@@ -68,7 +73,6 @@ public class GameLoop {
             players[i] = new Player("Player " + Integer.toString(i+1), INITIAL_MONEY, i);
         }
 
-        // Initializations
         startingPos = INITIAL_POSITION;
         smallBlind = INITIAL_SMALL_BLIND;
         bigBlind = INITIAL_BIG_BLIND;
@@ -80,8 +84,8 @@ public class GameLoop {
     }
 
     private void raiseBlinds(){
-        smallBlind *= 2;
-        bigBlind *= 2;
+        smallBlind *= BLIND_RAISE_RATIO;
+        bigBlind *= BLIND_RAISE_RATIO;
     }
 
     private void setPlayerBlinds(int startingPos, boolean state){
