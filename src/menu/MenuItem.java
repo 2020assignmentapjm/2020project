@@ -16,6 +16,7 @@ public class MenuItem extends HBox {
     private ImageView chip1 = getPokerChip(), chip2 = getPokerChip();
     private Text text;
     private Runnable script;
+    int fontSize2;
 
     // Constants
     private final String CHIP_IMG_PATH = "../images/chip.png";
@@ -33,10 +34,16 @@ public class MenuItem extends HBox {
 
         text = new Text(name);
         text.setFont(Font.font("Berlin Sans FB", FontWeight.BOLD, fontSize));
+        fontSize2 = fontSize;
 
         getChildren().addAll(chip1, text, chip2);
         setActive(false);
         setOnActivate(() -> System.out.println(name + " activated")); // For unhandled menu items
+    }
+    
+    public void disableBold()
+    {
+    	text.setFont(Font.font("Berlin Sans FB", fontSize2));
     }
 
     /**
