@@ -26,7 +26,7 @@ public class MainMenu extends Application {
     // Constants
     private final int SCENE_WIDTH = 900;
     private final int SCENE_HEIGHT = 600;
-    private final String BACKGROUND_IMG_PATH = "../images/bck.jpg";
+    private final String BACKGROUND_IMG_PATH = "images/bck.jpg";
     private final int VBOX_SPACING = 10;
 
     /**
@@ -59,19 +59,19 @@ public class MainMenu extends Application {
             scenePlay.setStage(primaryStage);
         });
 
-        /*
-         * Implement them first 
-         * 
-         * itemOption.setOnActivate(() -> {
-         * primaryStage.setScene(sceneOption.getScene());
-         * sceneOption.setStage(primaryStage);
-         * });
-         * 
-         * itemHelp.setOnActivate(() -> { 
-         * primaryStage.setScene(sceneHelp.getScene());
-         * sceneHelp.setStage(primaryStage);
-         * });
-         */
+        
+         //Implement them first 
+          /*
+         itemOption.setOnActivate(() -> {
+         primaryStage.setScene(sceneOption.getScene());
+         sceneOption.setStage(primaryStage);
+         });*/
+         
+         itemHelp.setOnActivate(() -> { 
+         primaryStage.setScene(sceneHelp.getScene());
+         sceneHelp.setStage(primaryStage);
+         });
+         
 
         itemCredit.setOnActivate(() -> {
             primaryStage.setScene(SceneCredit.getScene());
