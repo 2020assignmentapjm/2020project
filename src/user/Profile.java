@@ -1,6 +1,4 @@
-package user;
-
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 import java.lang.*;
@@ -19,7 +17,7 @@ public class Profile{
     private int gameChips = 10000;
     private int gameHands;
     private int gameWonHands;
-    private static List<Integer> CareerStats;
+    private static ArrayList<Integer> CareerStats = new ArrayList<Integer>();
     public int getGameChips(){
         return gameChips;
     }
@@ -33,7 +31,7 @@ public class Profile{
     public int getCareerHands() {return CareerHands;}
     public int getCareerHandsWon() {return CareerWonHands;}
     public int getGameWonHands(){return gameWonHands;}
-    public List<Integer> getCareerStats(){return CareerStats;};
+    public ArrayList<Integer> getCareerStats(){return CareerStats;};
     public Profile(){
         File playerStats = new File("PlayerStats.txt");
         if (playerStats.exists()){
@@ -49,11 +47,13 @@ public class Profile{
                 System.out.println(CareerChips);
                 System.out.println(CareerHands);
                 System.out.println(CareerWonHands);
-                updateCareerStats(CareerChips, CareerHands, CareerWonHands);
+                CareerStats.add(CareerChips);
+                CareerStats.add(CareerHands);
+                CareerStats.add(CareerWonHands);
                 in.close();
             }
             catch (Exception ex){
-                System.out.println("Exception FILE IO error");
+                System.out.print("");
             }
         }
         else{
@@ -64,6 +64,9 @@ public class Profile{
                 CareerChips = 0;
                 CareerHands = 0;
                 CareerWonHands = 0;
+                CareerStats.add(CareerChips);
+                CareerStats.add(CareerHands);
+                CareerStats.add(CareerWonHands);
                 p.close();
             }
             catch (Exception e){
@@ -71,16 +74,32 @@ public class Profile{
             }
         }
     }
-    private void updateCareerStats(int a, int b, int c){
-        CareerStats.add(a);
-        CareerStats.add(b);
-        CareerStats.add(c);
+    public void updateCareerStats(int a, int b, int c){
+        CareerChips = CareerChips+a;
+        CareerHands = CareerHands+b;
+        CareerWonHands = CareerWonHands+c;
+        CareerStats.set(0,CareerChips);
+        CareerStats.set(1,CareerHands);
+        CareerStats.set(2,CareerWonHands);
+        writeStats();
     }
-    public List<Integer> getStats(){
+    private void writeStats(){
+        try {
+            PrintWriter p = new PrintWriter("PlayerStats.txt");
+            p.print(CareerChips + "," + CareerHands + "," + CareerWonHands + ",");
+            p.close();
+        }
+        catch (Exception e){
+            System.out.println("writeStats unsuccessful");
+        }
+    }
+    public ArrayList<Integer> getStats(){
         return CareerStats;
     }
-  /* Test function incase of errors
+   //Test function incase of errors
     public static void main (String [] args){
-      Profile p = new Profile();
-    }*/
+
+        Profile p = new Profile();
+        p.updateCareerStats(11100,11,21);
+    }
 }
