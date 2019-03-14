@@ -8,6 +8,7 @@ public class Player {
 	private boolean isCurrent;
 	private boolean isBigBlind;
 	private boolean isSmallBlind;
+    private int amountCalled;
 
 	// money attribute, chip amount, name, file io stats, profile, fold,call, raise
 	// methods.
@@ -18,6 +19,28 @@ public class Player {
 		this.isCurrent = false;
 		this.isBigBlind = false;
 		this.isSmallBlind = false;
+	}
+
+	public void play(int amountToCall){
+		if (amountCalled < amountToCall){
+			// decision is called by UI
+		}
+	}
+
+	public void fold(){
+
+	}
+
+	public void call(){
+
+	}
+
+	public void check(){
+		// same as calling 0 when amountCalled == amountToCall
+	}
+
+	public void bet(){
+
 	}
 	
 	/**
