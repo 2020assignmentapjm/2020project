@@ -110,6 +110,7 @@ public class SceneOption {
             head.setLayoutY(50);
 
             Profile p = new Profile();
+            p.updateCareerStats(1100,109,15);
 
             Text chips = new Text("Money won in career: "+p.getCareerChips());
             chips.setStyle("-fx-text-stroke: white; -fx-font-size: 16");
