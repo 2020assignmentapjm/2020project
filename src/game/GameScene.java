@@ -114,6 +114,9 @@ import javafx.scene.paint.Color;
 public class GameScene extends Application {
         @Override
         public void start(Stage primaryStage){
+                ImageView betImg = new ImageView("file:../../betButton.png");
+                ImageView foldImg = new ImageView("file:../../foldButton.png");
+                ImageView callImg = new ImageView("file:../../callButton.png");
                 final int SCENE_WIDTH = 1200;
                 final int SCENE_HEIGHT = 650;
                 //Set main pane and two sub panes: one for the game display one for the control panel
@@ -140,15 +143,18 @@ public class GameScene extends Application {
                 betSlide.setShowTickLabels(true);
                 //Buttons for poker game actions: fold, bet, raise
                 //Once game loop functions are added then call them on mouse clicks
-                Button bet = new Button("Bet    ");
+                Button bet = new Button();
+                bet.setGraphic(betImg);
                 bet.setOnMouseClicked(e -> {
                 //Player class to call
                 });
-                Button fold = new Button("Fold  ");
+                Button fold = new Button();
+                fold.setGraphic(foldImg);
                 fold.setOnMouseClicked(e -> {
                 //Player class to call
                 });
-                Button call = new Button("Call   ");
+                Button call = new Button();
+                call.setGraphic(callImg);
                 call.setOnMouseClicked(e -> {
                 //Player class to call
                 });
