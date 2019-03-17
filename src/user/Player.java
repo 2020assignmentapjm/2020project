@@ -1,5 +1,7 @@
 package user;
 
+import game.card.Card;
+
 public class Player {
 	// Variables
 	private String playerName;
@@ -8,17 +10,22 @@ public class Player {
 	private boolean isCurrent;
 	private boolean isBigBlind;
 	private boolean isSmallBlind;
-    private int amountCalled;
+	private boolean folded;
+	private Card[] cards;
+	private int amountCalled;
 
-	// money attribute, chip amount, name, file io stats, profile, fold,call, raise
-	// methods.
-	public Player(String playerName, int currentMoney, int playerPosition) {
+
+	// money attribute, chip amount, name, file io stats, profile, fold,call, raise methods.
+	public Player(String playerName, int currentMoney, int playerPosition, boolean isCurrent,
+				  boolean isBigBlind, boolean isSmallBlind, boolean folded, Card[] cards) {
 		this.playerName = playerName;
 		this.currentMoney = currentMoney;
 		this.playerPosition = playerPosition;
-		this.isCurrent = false;
-		this.isBigBlind = false;
-		this.isSmallBlind = false;
+		this.isCurrent = isCurrent;
+		this.isBigBlind = isBigBlind;
+		this.isSmallBlind = isSmallBlind;
+		this.folded = folded;
+		this.cards = cards;
 	}
 
 	public void play(int amountToCall){
@@ -27,22 +34,23 @@ public class Player {
 		}
 	}
 
-	public void fold(){
-
+	public String toString(){
+		return playerName + "," + currentMoney + "," + playerPosition + "," + isCurrent + "," +
+				isBigBlind + "," + isSmallBlind + "," + folded + "," + cards[0].toString() + "," + cards[1].toString();
 	}
 
-	public void call(){
-
+	public Card[] getCards(){
+		return cards;
 	}
 
-	public void check(){
-		// same as calling 0 when amountCalled == amountToCall
+	public boolean hasFolded(){
+		return folded;
 	}
 
-	public void bet(){
-
+	public void setFolded(boolean state){
+		folded = state;
 	}
-	
+
 	/**
 	 * @return the isCurrent
 	 */
@@ -109,8 +117,8 @@ public class Player {
 	/**
 	 * @param currentMoney the currentMoney to set
 	 */
-	public void setCurrentMoney(int currentMoney) {
-		this.currentMoney = currentMoney;
+	public void editCurrentMoney(int currentMoney) {
+		this.currentMoney += currentMoney;
 	}
 
 	/**
