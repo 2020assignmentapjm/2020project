@@ -1,100 +1,5 @@
-/*
-Scuffed old version, maybe of use later
 package game;
 
-
-import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
-import javafx.scene.image.ImageView;
-import java.util.*;
-import javafx.scene.text.Text;
-import javafx.geometry.Insets;
-import java.io.File;
-import javafx.scene.paint.Color;
-import javafx.scene.layout.Background;
-
-
-public class GameScene extends Application {
-    public void (Stage primaryStage){
-
-        final int SCENE_WIDTH = 1000;
-        final int SCENE_HEIGHT = 650;
-        final String BACKGROUND_IMG_PATH = "Cards/pokertable.jpg";
-
-        GridPane pane = new GridPane();
-        pane.setVgap(150); //vertical gap in pixels
-        pane.setPadding(new Insets(15, 15, 15, 15));
-
-        ArrayList<String> dealer = new ArrayList<String>();
-        dealer = card.dealCard(5);
-        dealer = card.getCardImageName(dealer);
-        ArrayList<String> p1 = new ArrayList<String>();
-        p1 = card.dealCard(2);
-        p1 = card.getCardImageName(p1);
-        ArrayList<String> p2 = new ArrayList<String>();
-        p2 = card.dealCard(2);
-        p2 = card.getCardImageName(p2);
-        ArrayList<String> p3 = new ArrayList<String>();
-        p3 = card.dealCard(2);
-        p3 = card.getCardImageName(p3);
-        ArrayList<String> p4 = new ArrayList<String>();
-        p4 = card.dealCard(2);
-        p4 = card.getCardImageName(p4);
-
-        ImageView imageView = new ImageView(new File("Cards/backCard.png").toURI().toString());
-        pane.add(imageView,5,0);
-
-        for(int i = 0; i < 5; i++)
-        {
-          ImageView imageView1 = new ImageView(new File("Cards/"+dealer.get(i)).toURI().toString());
-          pane.add(imageView1,i+3, 1);
-        }
-
-        for(int i = 0; i < 2; i++)
-        {
-          ImageView imageView1 = new ImageView(new File("Cards/"+p1.get(i)).toURI().toString());
-          pane.add(imageView1,i, 2);
-        }
-        imageView = new ImageView(new File("Cards/pokertable2.jpg").toURI().toString());
-        pane.add(imageView,2,2);
-        for(int i = 0; i < 2; i++)
-        {
-          ImageView imageView1 = new ImageView(new File("Cards/"+p2.get(i)).toURI().toString());
-          pane.add(imageView1,i+3, 2);
-        }
-        /*imageView = new ImageView(new File("Cards/pokertable2.jpg").toURI().toString());
-        pane.add(imageView,5,2);*/
-/*
-        for(int i = 0; i < 2; i++)
-        {
-          ImageView imageView1 = new ImageView(new File("Cards/"+p3.get(i)).toURI().toString());
-          pane.add(imageView1,i+6, 2);
-        }
-        imageView = new ImageView(new File("Cards/pokertable2.jpg").toURI().toString());
-        pane.add(imageView,8,2);
-        for(int i = 0; i < 2; i++)
-        {
-          ImageView imageView1 = new ImageView(new File("Cards/"+p4.get(i)).toURI().toString());
-          pane.add(imageView1,i+9, 2);
-        }
-
-        /*Text text = new Text();
-        text.setText("DEALER");
-        text.setFill(Color.BLACK);
-        pane.add(text, 2, 1);*/
-/*
-        File imgF = new File(BACKGROUND_IMG_PATH);
-        pane.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-
-        Scene scene = new Scene(pane);
-        primaryStage.setTitle("Game Scene");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-}*/
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Scene;
@@ -114,9 +19,9 @@ import javafx.scene.paint.Color;
 public class GameScene extends Application {
         @Override
         public void start(Stage primaryStage){
-                ImageView betImg = new ImageView("file:../../betButton.png");
-                ImageView foldImg = new ImageView("file:../../foldButton.png");
-                ImageView callImg = new ImageView("file:../../callButton.png");
+                ImageView betImg = new ImageView(new File("images/betButton.png").toURI().toString());
+                ImageView foldImg = new ImageView(new File("images/foldButton.png").toURI().toString());
+                ImageView callImg = new ImageView(new File("images/callButton.png").toURI().toString());
                 final int SCENE_WIDTH = 1200;
                 final int SCENE_HEIGHT = 650;
                 //Set main pane and two sub panes: one for the game display one for the control panel
@@ -168,7 +73,7 @@ public class GameScene extends Application {
 //         boolean roundEnd = getRoundEnd();
 
                 //Set the center deck which is always upside down
-                ImageView imageView = new ImageView(new File("../../images/backCard.png").toURI().toString());
+                ImageView imageView = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
                 imageView.setLayoutX(400);
                 imageView.setLayoutY(50);
                 pn.getChildren().add(imageView);
@@ -179,7 +84,7 @@ public class GameScene extends Application {
                 int cardGap = 0;
                 for(int i = 0; i < 5; i++)
                 {
-                        ImageView imageView2 = new ImageView(new File("../../images/backCard.png").toURI().toString());
+                        ImageView imageView2 = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
                         imageView2.setLayoutX(initial_x + cardGap);
                         imageView2.setLayoutY(initial_y);
                         pn.getChildren().add(imageView2);
@@ -194,7 +99,7 @@ public class GameScene extends Application {
                 {
                         for(int j = 0; j < 2; j++)
                         {
-                                ImageView imageView2 = new ImageView(new File("../../images/backCard.png").toURI().toString());
+                                ImageView imageView2 = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
                                 imageView2.setLayoutX(initial_x + cardGap);
                                 imageView2.setLayoutY(initial_y);
                                 pn.getChildren().add(imageView2);
@@ -206,7 +111,7 @@ public class GameScene extends Application {
                 //Set the scene needs to be replaced with the get/set scene functions when implementing
                 Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
                 primaryStage.setTitle("Game Scene");
-                File imgF = new File("../../images/pokertable.jpg");
+                File imgF = new File("images/Cards/pokertable.jpg");
                 root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
                 //    primaryStage.setResizeable(false);
                 primaryStage.setScene(scene);
