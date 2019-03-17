@@ -8,6 +8,7 @@ public class Card {
 
     // Variables
     private int figure;
+    private char figureChar;
     private char suit;
 
     // Constants
@@ -16,7 +17,8 @@ public class Card {
 
     public Card(String card) {
         
-        this.figure = charFigureToNumber(card.charAt(FIGURE_INDEX));
+        this.figureChar = card.charAt(FIGURE_INDEX);
+        this.figure = charFigureToNumber(figureChar);
         this.suit = card.charAt(SUIT_INDEX);
     }
 
@@ -39,7 +41,7 @@ public class Card {
     }
 
     public String toString() {
-        return String.valueOf(figure) + String.valueOf(suit);
+        return figureChar + suit + "";
     }
 
     /**
