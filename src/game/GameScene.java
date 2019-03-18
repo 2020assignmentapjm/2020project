@@ -1,8 +1,13 @@
 package game;
 
+import game.card.Card;;
+
+import javafx.animation.PathTransition;
+import javafx.animation.RotateTransition;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -14,22 +19,29 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import java.io.File;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
+import javafx.scene.shape.Line;
+
 //Add package when complete, and remove main method, and extends app
 
 public class GameScene extends Application {
         @Override
         public void start(Stage primaryStage){
+                ImageView[] dealerImages = {new Card("5C").getCardImage(), new Card("3D").getCardImage(), new Card("AS").getCardImage(), new Card("KH").getCardImage(), new Card("2D").getCardImage()};
+                ImageView[] dImage = new ImageView[5];
+
+
                 ImageView betImg = new ImageView(new File("images/betButton.png").toURI().toString());
                 ImageView foldImg = new ImageView(new File("images/foldButton.png").toURI().toString());
                 ImageView callImg = new ImageView(new File("images/callButton.png").toURI().toString());
                 final int SCENE_WIDTH = 1200;
                 final int SCENE_HEIGHT = 650;
+
                 //Set main pane and two sub panes: one for the game display one for the control panel
                 BorderPane root = new BorderPane();
                 VBox vb = new VBox();
                 vb.setSpacing(20);
                 root.setRight(vb);
-                vb.setMinWidth(250);
                 vb.setPrefWidth(200);
                 //Text boxes for the control panel
                 Text name = new Text("--Placeholder--");
@@ -72,41 +84,116 @@ public class GameScene extends Application {
 //         int roundNum = getRoundNum();
 //         boolean roundEnd = getRoundEnd();
 
-                //Set the center deck which is always upside down
-                ImageView imageView = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
-                imageView.setLayoutX(400);
-                imageView.setLayoutY(50);
-                pn.getChildren().add(imageView);
+                new Thread(() -> {
+                        try{
 
-                //Set the Dealers cards
-                int initial_x = 260;
-                int initial_y = 250;
-                int cardGap = 0;
-                for(int i = 0; i < 5; i++)
-                {
-                        ImageView imageView2 = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
-                        imageView2.setLayoutX(initial_x + cardGap);
-                        imageView2.setLayoutY(initial_y);
-                        pn.getChildren().add(imageView2);
-                        cardGap = cardGap + 70;
-                }
-                //Set the players cards
-                initial_x = 50;
-                initial_y = 500;
-                cardGap = 0;
-                //Iterative over cardback on the positions they should be set to
-                for(int i = 0; i < 4; i++)
-                {
-                        for(int j = 0; j < 2; j++)
-                        {
-                                ImageView imageView2 = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
-                                imageView2.setLayoutX(initial_x + cardGap);
-                                imageView2.setLayoutY(initial_y);
-                                pn.getChildren().add(imageView2);
-                                cardGap = cardGap + 70;
+                                //Set the center deck which is always upside down
+                                ImageView imageView = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+                                imageView.setLayoutX(400);
+                                imageView.setLayoutY(50);
+                                pn.getChildren().add(imageView);
+
+
+                                //Set the Dealers cards
+                                int initial_x = -100;
+                                int initial_y = 250;
+                                int cardGap = 0;
+                                double duration = 1;
+                                for(int i = 0; i < 5; i++)
+                                {
+
+                                        dImage[i] = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+                                        dImage[i].setLayoutX(400);
+                                        dImage[i].setLayoutY(50);
+                                        pn.getChildren().add(dImage[i]);
+
+                                        Line line = new Line(40,50,initial_x + cardGap,initial_y);
+
+                                        PathTransition transition = new PathTransition();
+                                        transition.setNode(dImage[i]);
+                                        transition.setDuration(Duration.seconds(0.5));
+                                        transition.setPath(line);
+                                        transition.setDelay(Duration.seconds(duration));
+                                        transition.play();
+
+                                        RotateTransition rt = new RotateTransition();
+                                        rt.setNode(dImage[i]);
+                                        rt.setDuration(Duration.seconds(0.5));
+                                        rt.setByAngle(180);
+                                        rt.setDelay(Duration.seconds(duration));
+                                        rt.play();
+
+                                        cardGap = cardGap + 70;
+                                        duration = duration +0.5;
+                                }
+
+
+
+                                //Iterative over cardback on the positions they should be set to
+                                initial_x = -315;
+                                initial_y = 500;
+                                cardGap = 0;
+                                for(int i = 0; i < 4; i++)
+                                {
+                                        for(int j = 0; j < 2; j++)
+                                        {
+                                                ImageView imageView2 = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+                                                imageView2.setLayoutX(400);
+                                                imageView2.setLayoutY(50);
+                                                pn.getChildren().add(imageView2);
+
+                                                Line line = new Line(40,50,initial_x + cardGap,initial_y);
+
+                                                PathTransition transition = new PathTransition();
+                                                transition.setNode(imageView2);
+                                                transition.setDuration(Duration.seconds(0.5));
+                                                transition.setPath(line);
+                                                cardGap = cardGap + 70;
+                                                transition.setDelay(Duration.seconds(duration));
+                                                transition.play();
+                                                duration = duration + 0.5;
+                                        }
+                                        cardGap = cardGap + 70;
+                                }
+
+                                Thread.sleep(7500);
+                                int round = 0;
+                                for(int i = 0; i < 5; i ++)
+                                {
+                                        if(i < 3)
+                                        {
+                                                dImage[i].setImage(dealerImages[i].getImage());
+                                                Thread.sleep(1000);
+                                        }
+
+                                }
+                                boolean check = true;
+                                while(check)
+                                {
+                                        Thread.sleep(1000);
+                                        if(round == 3)
+                                        {
+                                                dImage[3].setImage(dealerImages[3].getImage());
+                                                Thread.sleep(1000);
+                                        }
+                                        if(round == 4)
+                                        {
+                                                dImage[4].setImage(dealerImages[4].getImage());
+                                                Thread.sleep(1000);
+                                                check = false;
+                                        }
+                                        round = round + 1;
+                                }
+
+                        }catch (InterruptedException e){
+
                         }
-                        cardGap = cardGap + 70;
-                }
+
+                }).start();
+
+
+
+
                 root.setCenter(pn);
                 //Set the scene needs to be replaced with the get/set scene functions when implementing
                 Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
