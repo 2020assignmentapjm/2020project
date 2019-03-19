@@ -43,7 +43,7 @@ public class SceneOption {
         private final int SCENE_WIDTH = 900;
         private final int SCENE_HEIGHT = 600;
         private final int VBOX_SPACING = 10;
-        private final String BACKGROUND_IMG_PATH = "../images/bck.jpg";
+        private final String BACKGROUND_IMG_PATH = "images/bck.jpg";
 
         public SceneOption() {
 
