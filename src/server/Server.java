@@ -45,7 +45,7 @@ public class Server extends Thread {
             System.out.println("Server created.");
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
 
@@ -82,7 +82,7 @@ public class Server extends Thread {
             System.exit(-1);
         } 
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
 
@@ -111,7 +111,7 @@ public class Server extends Thread {
             System.out.println("Server has closed");
         }
         catch (IOException e){
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
     }
@@ -132,27 +132,27 @@ public class Server extends Thread {
             }
         }
         catch (IOException e){
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
     }
 
 
     /**
-     * Reads a number from the input stream of a specific client
-     * If input stream is empty, waits until input stream contains an input
-     * The input is read from a queue
+     * Reads a string from the input stream of a specific client.
+     * If input stream is empty, waits until input stream contains an input.
+     * The input is read from a queue.
      * @param clientIdx index of a specific client
-     * @return the number read or -1 if client doesn't exist, client is closed or IOException occurs
+     * @return the string read or null if: client doesn't exist, client is closed or IOException occurs
      */
-    public int readNumber(int clientIdx){
+    public String readMsg(int clientIdx){
         if (clients[clientIdx] == null){
             System.err.println("Client doesn't exist");
-            return -1;
+            return null;
         }
         if (clients[clientIdx].isClosed()){
             System.err.println("Client is closed");
-            return -1;
+            return null;
         }
         
         try{
@@ -160,25 +160,24 @@ public class Server extends Thread {
 
             if (input == null){
                 System.err.println("Client is closed");
-                return -1;
+                return null;
             }
 
-            int num = Integer.parseInt(input);      // Converts the string read to an int
-            return num;
+            return input;
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO exception");
         }
-        return -1;
+        return null;
     }
 
 
     /**
-     * Sends a number to the output stream of a specific client which gets added to a queue
-     * @param num the number to be outputed
+     * Sends a string to the output stream of a specific client which gets added to a queue
+     * @param msg the string to be outputed
      * @param clientIdx index of a specific client
      */
-    public void sendNumber(int num, int clientIdx){
+    public void sendMsg(String msg, int clientIdx){
         if (clients[clientIdx] == null){
             System.err.println("Client doesn't exist");
             return;
@@ -188,7 +187,7 @@ public class Server extends Thread {
             return;
         }
 
-        out[clientIdx].write(num);
+        out[clientIdx].write(msg);
     }
 
     
@@ -210,7 +209,7 @@ public class Server extends Thread {
         try {
 			return InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			System.err.println("Unknown host exception");
         }
         return "error";
     }

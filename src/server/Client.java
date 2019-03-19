@@ -29,7 +29,7 @@ public class Client extends Thread{
             System.out.println("Client created.");
         }
         catch (IOException e){
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
     }
@@ -50,7 +50,7 @@ public class Client extends Thread{
             out = new PrintWriter(client.getOutputStream(), true);                      // Output stream for current connected client
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
 
@@ -79,26 +79,27 @@ public class Client extends Thread{
             out.close();
         }
         catch (IOException e){
-            e.printStackTrace();
+            System.err.println("IO exception");
             System.exit(-1);
         }
     }
 
 
     /**
-     * Reads a number from the server with the input stream of the client
-     * If input stream is empty, waits until input stream contains an input
-     * The input is read from a queue
-     * @return the number read or -1 if client doesn't exist, client is not connected, server is closed or IOException occurs
+     * Reads a string from the server with the input stream of the client.
+     * If input stream is empty, waits until input stream contains an input.
+     * The input is read from a queue.
+     * @return the number read or null if: client doesn't exist, client is not
+     *          connected, server is closed or IOException occurs
      */
-    public int readNumber(){
+    public String readMsg(){
         if (client == null){
             System.err.println("Client doesn't exist");
-            return -1;
+            return null;
         }
         if (!client.isConnected()){
             System.err.println("Client is not connected");
-            return -1;
+            return null;
         }
 
         try{
@@ -106,24 +107,23 @@ public class Client extends Thread{
 
             if (input == null){
                 System.err.println("Server is closed");
-                return -1;
+                return null;
             }
 
-            int num = Integer.parseInt(input);
-            return num;
+            return input;
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO exception");
         }
-        return -1;
+        return null;
     }
 
 
     /**
-     * Sends a number to the server which gets added to a queue
-     * @param num the number to be outputed
+     * Sends a string to the server which gets added to a queue
+     * @param msg the number to be outputed
      */
-    public void sendNumber(int num){
+    public void sendMsg(String msg){
         if (client == null){
             System.err.println("Server doesn't exist");
             return;
@@ -133,6 +133,6 @@ public class Client extends Thread{
             return;
         }
 
-        out.write(num);
+        out.write(msg);
     }
 }
