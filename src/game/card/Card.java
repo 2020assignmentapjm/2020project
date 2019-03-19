@@ -37,11 +37,14 @@ public class Card {
     }
 
     public ImageView getCardImage() {
-        return new ImageView(new File("images/cards/" + this + ".png").toURI().toString());
+        ImageView image = new ImageView(new File("images/cards/" + this + ".png").toURI().toString());
+        image.setFitWidth(55);
+        image.setFitHeight(70);
+        return image;
     }
 
     public String toString() {
-        return figureChar + suit + "";
+        return Character.toString(figureChar) + Character.toString(suit);
     }
 
     /**
