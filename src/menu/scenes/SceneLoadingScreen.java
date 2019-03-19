@@ -5,6 +5,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.File;
+
+import game.GameScene;
 import javafx.scene.layout.Pane;
 import server.Server;
 import server.Client;
@@ -18,7 +20,7 @@ public class SceneLoadingScreen {
     // Constants
     private final int SCENE_WIDTH = 900;
     private final int SCENE_HEIGHT = 600;
-    private final String BACKGROUND_IMG_PATH = "../images/waitingBck.png";
+    private final String BACKGROUND_IMG_PATH = "images/waitingBck.png";
 
     /**
      * Constructor for server
@@ -29,10 +31,33 @@ public class SceneLoadingScreen {
         Pane pane = new Pane();
 
         Server server = new Server(playerNum, 2000);
-        server.start();                             // Waits until all players are connected
+        server.start();
 
         // Scenes
-        // TODO: load game scene with server param
+        GameScene gameScene = new GameScene(server, playerNum);
+
+        // Check if all players have connected in thread
+        new Thread(() -> {
+            while (true) {
+                if (server.getclientCons() == playerNum) {
+
+                    // Send players the ready to connect to game scene message
+                    for (int i = 0; i < playerNum; i++) {
+                        server.sendMsg(Integer.toString(playerNum), i);
+                    }
+
+                    // Redirect window to game scene
+                    stage.setScene(GameScene.getScene());
+                    gameScene.setStage(stage);
+                }
+
+                try {
+                    Thread.sleep(1000);     // Reduce processor load
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
         // Show server IP address
         MenuItem itemHost = new MenuItem("HOST: " + server.getHost(), 25);
@@ -41,12 +66,6 @@ public class SceneLoadingScreen {
         itemHost.setLayoutY(150);
 
         pane.getChildren().add(itemHost);
-
-
-        // When all connected:
-        // Event Handlers
-        // TODO: stage.setScene(gameScene.getScene());
-        // TODO: gameScene.setStage(stage);
 
         // Background
         File imgF = new File(BACKGROUND_IMG_PATH);
@@ -62,16 +81,15 @@ public class SceneLoadingScreen {
         // Main pane
         Pane pane = new Pane();
 
-        // Scenes
-        // TODO: load game scene with client param
-
         Client client = new Client(host, 2000);
         client.start();
 
-        // When all connected:
-        // Event Handlers
-        // TODO: stage.setScene(gameScene.getScene());
-        // TODO: gameScene.setStage(stage);
+        // Scenes
+        GameScene gameScene = new GameScene(client, Integer.parseInt(client.readMsg()));
+
+        // Redirect window to game scene
+        stage.setScene(GameScene.getScene());
+        gameScene.setStage(stage);
 
         // Background
         File imgF = new File(BACKGROUND_IMG_PATH);
