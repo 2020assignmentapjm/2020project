@@ -19,7 +19,7 @@ public class MenuItem extends HBox {
     int fontSize2;
 
     // Constants
-    private final String CHIP_IMG_PATH = "../images/chip.png";
+    private final String CHIP_IMG_PATH = "images/chip.png";
     private final int CHIP_SIZE = 15;
 
     /**
