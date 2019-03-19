@@ -59,19 +59,17 @@ public class MainMenu extends Application {
             scenePlay.setStage(primaryStage);
         });
 
-        
-         //Implement them first 
-          /*
-         itemOption.setOnActivate(() -> {
-         primaryStage.setScene(sceneOption.getScene());
-         sceneOption.setStage(primaryStage);
-         });*/
-         
-         itemHelp.setOnActivate(() -> { 
-         primaryStage.setScene(sceneHelp.getScene());
-         sceneHelp.setStage(primaryStage);
-         });
-         
+        // Implement them first
+        /*
+         * itemOption.setOnActivate(() -> {
+         * primaryStage.setScene(sceneOption.getScene());
+         * sceneOption.setStage(primaryStage); });
+         */
+
+        itemHelp.setOnActivate(() -> {
+            primaryStage.setScene(SceneHelp.getScene());
+            sceneHelp.setStage(primaryStage);
+        });
 
         itemCredit.setOnActivate(() -> {
             primaryStage.setScene(SceneCredit.getScene());
