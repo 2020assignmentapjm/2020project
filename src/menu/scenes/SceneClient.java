@@ -32,7 +32,7 @@ public class SceneClient {
     private final int SCENE_WIDTH = 900;
     private final int SCENE_HEIGHT = 600;
     private final int VBOX_SPACING = 10;
-    private final String BACKGROUND_IMG_PATH = "../images/bck.jpg";
+    private final String BACKGROUND_IMG_PATH = "images/bck.jpg";
     private final int TIMEOUT = 1000; // 1 second
 
     /**
@@ -67,21 +67,23 @@ public class SceneClient {
                     }
                     else{
                         tf.setStyle("-fx-border-color: red;");
+                        System.err.println("Server is not reachable");
                     }
                 }
                 catch (UnknownHostException e) {
 
                     tf.setStyle("-fx-border-color: red;");
-                    e.printStackTrace();
+                    System.err.println("Unknown host exception");
                 }
                 catch (IOException e) {
                     
                     tf.setStyle("-fx-border-color: red;");
-                    e.printStackTrace();
+                    System.err.println("IO exception");
                 }
             }
             else{
                 tf.setStyle("-fx-border-color: red;");
+                System.err.println("No input");
             }
         });
 
