@@ -29,24 +29,10 @@ public class Player {
 		amountCalled = 0;
 	}
 
-	public Player(String player){
-		String[] players = player.split(",");
-
-		this.playerName = players[0];
-		this.currentMoney = Integer.valueOf(players[1]);
-		this.playerPosition = Integer.valueOf(players[2]);
-		this.isCurrent = Boolean.valueOf(players[3]);
-		this.isBigBlind = Boolean.valueOf(players[4]);
-		this.isSmallBlind = Boolean.valueOf(players[5]);
-		this.folded = Boolean.valueOf(players[6]);
-		this.cards[0] = new Card(players[7]);
-		this.cards[1] = new Card(players[8]);
-		amountCalled = 0;
-	}
-
 	public String toString(){
-		return playerName + "," + String.valueOf(currentMoney) + "," + String.valueOf(playerPosition) + "," + String.valueOf(isCurrent) + "," +
-			String.valueOf(isBigBlind) + "," + String.valueOf(isSmallBlind) + "," + String.valueOf(folded) + "," + cards[0].toString() + "," + cards[1].toString();
+		return playerName + "," + String.valueOf(currentMoney) + "," + String.valueOf(playerPosition) + "," +
+		String.valueOf(isCurrent) + "," + String.valueOf(isBigBlind) + "," + String.valueOf(isSmallBlind) + "," +
+		String.valueOf(folded) +"," + cards[0].toString() + "," + cards[1].toString();
 	}
 
 	public Card[] getCards(){
@@ -103,7 +89,7 @@ public class Player {
 	 */
 	public void setSmallBlind(boolean isSmallBlind, int smallBlind) {
 		this.isSmallBlind = isSmallBlind;
-        this.currentMoney = smallBlind;
+        this.currentMoney -= smallBlind;
         this.amountCalled = smallBlind;
 	}
 
