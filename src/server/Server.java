@@ -24,7 +24,6 @@ public class Server extends Thread {
 
     // Constants
     private final int TIMEOUT = 60000; // 1 minute
-    private final int PLAYER_NUM;
 
 
 
@@ -36,8 +35,6 @@ public class Server extends Thread {
      */
     public Server(int playerNum, int port) {
 
-        PLAYER_NUM = playerNum;
-
         try{
             server = new ServerSocket(port);    // Create a server socket with the port number
             server.setSoTimeout(TIMEOUT);       // Set a timeout for the server socket
@@ -45,61 +42,42 @@ public class Server extends Thread {
             System.out.println("Server created.");
         }
         catch (IOException e) {
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
 
-        clients = new Socket[PLAYER_NUM];       // Create client array
+        clients = new Socket[playerNum];       // Create client array
 
-        in = new BufferedReader[PLAYER_NUM];    // Create input stream array for clients
-        out = new PrintWriter[PLAYER_NUM];      // Create output stream array for clients
+        in = new BufferedReader[playerNum];    // Create input stream array for clients
+        out = new PrintWriter[playerNum];      // Create output stream array for clients
 
         clientCons = 0;
+
+        new Thread(() -> {
+            try {
+                for (int i=0; i<playerNum; i++){
+                    System.out.println("Waiting for clients.");
+                    clients[i] = server.accept();       // Accept new clients and store them in the array
+
+                    clientCons++;
+                    System.out.println("New client connected on server side with address: " + clients[i].getInetAddress());
+
+                    in[i] = new BufferedReader(new InputStreamReader(clients[i].getInputStream()));     // Input stream for current connected client
+                    out[i] = new PrintWriter(clients[i].getOutputStream(), true);                       // Output stream for current connected client
+                
+                    sendMsg(String.valueOf(i), i);
+                }
+            }
+            catch (SocketTimeoutException s) {
+                System.err.println("Socket timed out!");
+                System.exit(-1);
+            } 
+            catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(-1);
+            }
+        }).start();
     }
-
-
-    /**
-     * "run" method extended from Thread
-     * It accepts and stores the clients, creates an input and output stream for clients and keeps the server running until interrupted
-     */
-    @Override
-    public void run(){
-
-        try {
-            for(int i=0; i<PLAYER_NUM; i++){
-                System.out.println("Waiting for clients.");
-                clients[i] = server.accept();       // Accept new clients and store them in the array
-
-                clientCons++;
-                System.out.println("New client connected on server side with address: " + clients[i].getInetAddress());
-
-                in[i] = new BufferedReader(new InputStreamReader(clients[i].getInputStream()));     // Input stream for current connected client
-                out[i] = new PrintWriter(clients[i].getOutputStream(), true);                       // Output stream for current connected client
-            }
-        }
-        catch (SocketTimeoutException s) {
-            System.err.println("Socket timed out!");
-            System.exit(-1);
-        } 
-        catch (IOException e) {
-            System.err.println("IO exception");
-            System.exit(-1);
-        }
-
-
-        // Keep server running until interrupted with busy-waiting
-        while(true){
-            try{
-                Thread.sleep(1000);     // Make the server thread sleep for 1 second in order to reduce processor load
-            }
-            catch (InterruptedException ex){
-                Thread.currentThread().interrupt();     // To prevent the thread not shutting down correctly
-                System.err.println("Server interrupted");
-                break;
-            }
-        }
-    }
-
 
     /**
      * Closes the server
@@ -111,7 +89,7 @@ public class Server extends Thread {
             System.out.println("Server has closed");
         }
         catch (IOException e){
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
@@ -132,7 +110,7 @@ public class Server extends Thread {
             }
         }
         catch (IOException e){
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
@@ -154,6 +132,10 @@ public class Server extends Thread {
             System.err.println("Client is closed");
             return null;
         }
+        if (in[clientIdx] == null){
+            System.err.println("Input for client at [" + clientIdx + "] has been closed");
+            return null;
+        }
         
         try{
             String input = in[clientIdx].readLine();
@@ -163,10 +145,12 @@ public class Server extends Thread {
                 return null;
             }
 
+            System.out.println("message read at server: " + input);
+
             return input;
         }
         catch (IOException e) {
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
         }
         return null;
     }
@@ -186,8 +170,13 @@ public class Server extends Thread {
             System.err.println("Client is closed");
             return;
         }
+        if (out[clientIdx] == null){
+            System.err.println("Output for client at [" + clientIdx + "] has been closed");
+            return;
+        }
 
-        out[clientIdx].write(msg);
+        out[clientIdx].println(msg);
+        System.out.println("message sent at server: " + msg);
     }
 
     

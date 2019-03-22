@@ -10,6 +10,7 @@ public class Client extends Thread{
 
     // Socket
     private Socket client;
+    private int position;
 
     // I/O
     private BufferedReader in;
@@ -29,42 +30,34 @@ public class Client extends Thread{
             System.out.println("Client created.");
         }
         catch (IOException e){
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
+
+        new Thread(() -> {
+            if (client.isConnected()){
+                System.out.println("Client connected on client side.");
+            }
+            
+            try{
+                in = new BufferedReader(new InputStreamReader(client.getInputStream()));    // Input stream for current connected client
+                out = new PrintWriter(client.getOutputStream(), true);                      // Output stream for current connected client
+                
+                position = Integer.valueOf(readMsg());
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage());
+                System.exit(-1);
+            }
+        }).start();
     }
 
-
     /**
-     * "run" method extended from Thread
-     * It creates an input and output stream for the client and keeps the client running until interrupted
+     * 
+     * @return position of the client
      */
-    @Override
-    public void run(){
-        if (client.isConnected()){
-            System.out.println("Client connected on client side.");
-        }
-        
-        try{
-            in = new BufferedReader(new InputStreamReader(client.getInputStream()));    // Input stream for current connected client
-            out = new PrintWriter(client.getOutputStream(), true);                      // Output stream for current connected client
-        }
-        catch (IOException e) {
-            System.err.println("IO exception");
-            System.exit(-1);
-        }
-
-        // Keep client running until interrupted with busy-waiting
-        while(true){
-            try{
-                Thread.sleep(1000);     // Make the server thread sleep for 1 second in order to reduce processor load
-            }
-            catch (InterruptedException ex){
-                Thread.currentThread().interrupt();     // To prevent the thread not shutting down correctly
-                System.err.println("Server interrupted");
-                break;
-            }
-        }
+    public int getPosition(){
+        return position;
     }
 
 
@@ -79,7 +72,7 @@ public class Client extends Thread{
             out.close();
         }
         catch (IOException e){
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
@@ -101,6 +94,10 @@ public class Client extends Thread{
             System.err.println("Client is not connected");
             return null;
         }
+        if (in == null){
+            System.err.println("Input for client has been closed");
+            return null;
+        }
 
         try{
             String input = in.readLine();
@@ -110,10 +107,12 @@ public class Client extends Thread{
                 return null;
             }
 
+            System.out.println("message read at client: " + input);
+
             return input;
         }
         catch (IOException e) {
-            System.err.println("IO exception");
+            System.err.println(e.getMessage());
         }
         return null;
     }
@@ -132,7 +131,12 @@ public class Client extends Thread{
             System.err.println("Server is closed");
             return;
         }
+        if (out == null){
+            System.err.println("Output for client has been closed");
+            return;
+        }
 
-        out.write(msg);
+        out.println(msg);
+        System.out.println("message sent at client: " + msg);
     }
 }
