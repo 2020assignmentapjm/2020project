@@ -1,6 +1,7 @@
 package menu.scenes;
 
 import menu.*;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -25,30 +26,36 @@ public class SceneLoadingScreen {
     /**
      * Constructor for server
      */
-    public SceneLoadingScreen(int playerNum) {
+    public SceneLoadingScreen(int clientNum) {
 
         // Main pane
         Pane pane = new Pane();
 
-        Server server = new Server(playerNum, 2000);
+        Server server = new Server(clientNum, 2000);
         server.start();
-
-        // Scenes
-        GameScene gameScene = new GameScene(server, playerNum);
 
         // Check if all players have connected in thread
         new Thread(() -> {
-            while (true) {
-                if (server.getclientCons() == playerNum) {
 
-                    // Send players the ready to connect to game scene message
-                    for (int i = 0; i < playerNum; i++) {
-                        server.sendMsg(Integer.toString(playerNum), i);
+            while (true) {
+                if (server.getclientCons() == clientNum) {
+
+                    // Send players the client number so that they can connect to game scene
+                    for (int i = 0; i < clientNum; i++) {
+                        server.sendMsg(String.valueOf(clientNum), i);
                     }
 
-                    // Redirect window to game scene
-                    stage.setScene(GameScene.getScene());
-                    gameScene.setStage(stage);
+                    GameScene gameScene = new GameScene(server, clientNum);
+                    
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                           // Redirect window to game scene
+                            stage.setScene(GameScene.getScene());
+                            gameScene.setStage(stage);
+                        }
+                     });
+                    break;
                 }
 
                 try {
@@ -84,12 +91,19 @@ public class SceneLoadingScreen {
         Client client = new Client(host, 2000);
         client.start();
 
-        // Scenes
-        GameScene gameScene = new GameScene(client, Integer.parseInt(client.readMsg()));
+        new Thread(() -> {
+ 
+            GameScene gameScene = new GameScene(client, Integer.valueOf(client.readMsg()));
 
-        // Redirect window to game scene
-        stage.setScene(GameScene.getScene());
-        gameScene.setStage(stage);
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    // Redirect window to game scene
+                    stage.setScene(GameScene.getScene());
+                    gameScene.setStage(stage);
+                }
+            });
+        }).start();
 
         // Background
         File imgF = new File(BACKGROUND_IMG_PATH);
