@@ -13,6 +13,7 @@ import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -27,7 +28,9 @@ import java.util.Collections;
 
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import menu.MenuItem;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 
 public class GameScene {
 
@@ -39,26 +42,29 @@ public class GameScene {
 	private static Stage stage;
 	private Button fold, check, bet;
 	private ImageView foldImg, checkImg, callImg, betImg;
+	private boolean actionMade;
 
+	private Player[] players;
+	private Player ownPlayer;
+	private int currentPlayer;
+	private int smallBlind, bigBlind;
+	private int startingPos;
+	private int pot;
+	private boolean gameEnded;
+	private boolean roundEnded;
+	private int roundNum;
+	private int amountToCall;
+	private int playerNum;
+	private Server server;
+	private Client client;
 
-    private Player[] players;
-    private int currentPlayer;
-    private int smallBlind, bigBlind;
-    private int startingPos;
-    private int pot;
-    private boolean gameEnded;
-    private boolean roundEnded;
-    private int roundNum;
-    private int amountToCall;
-    private int playerNum;
-
-    private Deck deck;
-    private Card[] dealerCards;
+	private Deck deck;
+	private Card[] dealerCards;
 
 	// Constant
-	final int SCENE_WIDTH = 1200;
-	final int SCENE_HEIGHT = 650;
-	final String BACKGROUND_IMG_PATH = "images/Cards/pokertable.jpg";
+	private final int SCENE_WIDTH = 1200;
+	private final int SCENE_HEIGHT = 650;
+	private final String BACKGROUND_IMG_PATH = "images/Cards/pokertable.jpg";
 
 	private final int INITIAL_MONEY = 10000;
 	private final int INITIAL_POSITION = 0;
@@ -66,24 +72,35 @@ public class GameScene {
 	private final int INITIAL_BIG_BLIND = 100;
 	private final int BLIND_RAISE_ROUND_NUM = 5;
 	private final int BLIND_RAISE_RATIO = 2;
-	
 
-	public GameScene(Server server, int playerNum) {
+	public GameScene(Server server, int clientNum) {
+
+		System.out.println("Server In Game Scene");
 
 		initializeScene();
 
-		this.playerNum = playerNum;
+		this.playerNum = clientNum + 1; // Including the server
 
-		initializePlayersServer(server);
+		this.server = server;
+
+		//initializePlayersServer(this.server);
+
+		//runGame();
 	}
 
-	public GameScene(Client client, int playerNum) {
+	public GameScene(Client client, int clientNum) {
+
+		System.out.println("Client In Game Scene");
 
 		initializeScene();
 
-		this.playerNum = playerNum;
+		this.playerNum = clientNum + 1; // Including the server
 
-		initializePlayersClient(client);
+		this.client = client;
+
+		//initializePlayersClient(this.client);
+		
+		//runGame();
 	}
 
 	// -----------------------------------------
@@ -91,193 +108,298 @@ public class GameScene {
 	// -----------------------------------------
 
 	public Card[] getDealerCards() {
-        return dealerCards;
-    }
-
-    public Player[] getPlayers() {
-        return players;
-    }
-
-    public int getRoundNum() {
-        return roundNum;
-    }
-
-    public boolean getRoundEnded() {
-        return roundEnded;
-    }
-
-    public int getPlayerNum() {
-        return playerNum;
+		return dealerCards;
 	}
-	
+
+	public Player[] getPlayers() {
+		return players;
+	}
+
+	public int getRoundNum() {
+		return roundNum;
+	}
+
+	public boolean getRoundEnded() {
+		return roundEnded;
+	}
+
+	public int getPlayerNum() {
+		return playerNum;
+	}
+
 	public void runGame() {
-        roundNum = 0;
+		roundNum = 0;
 
-        gameEnded = false;
-        roundEnded = false;
+		gameEnded = false;
+		roundEnded = false;
 
-        while (!gameEnded) { // For every round
+		while (!gameEnded) { // For every round
 
-            amountToCall = bigBlind;
+			amountToCall = bigBlind;
 
-            while (!roundEnded) { // Within 1 round
-                if (!players[currentPlayer].hasFolded()) {
+			while (!roundEnded) { // Within 1 round
 
-                    players[currentPlayer].play(amountToCall);
-                    // decision is called by UI
+				if (!players[currentPlayer].hasFolded()) {
 
-                }
-                players[currentPlayer].setCurrent(false);
+					setActive(currentPlayer); // decision is called by UI
 
-                currentPlayer = (currentPlayer + 1) % playerNum;
+				}
+				players[currentPlayer].setCurrent(false);
 
-                players[currentPlayer].setCurrent(true);
-            }
-        }
+				currentPlayer = (currentPlayer + 1) % playerNum;
 
-        // End of Round
-        // Check who won
-        assignPot();        // Assigns pot to a player
-        checkEliminated();    // Check if someone was eliminated
+				players[currentPlayer].setCurrent(true);
+			}
 
-        setPlayerBlinds(startingPos, false);
+			//
+		}
 
-        startingPos = (startingPos + 1) % playerNum;
+		// End of Round
+		// Check who won
+		assignPot(); // Assigns pot to a player
+		checkEliminated(); // Check if someone was eliminated
 
-        setPlayerBlinds(startingPos, true);
+		// TODO: reset
 
-        roundNum++;
+		setPlayerBlinds(startingPos, false);
 
-        if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
-            raiseBlinds();
-        }
+		startingPos = (startingPos + 1) % playerNum;
+
+		setPlayerBlinds(startingPos, true);
+
+		roundNum++;
+
+		if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
+			raiseBlinds();
+		}
 	}
-	
+
 	private void initializePlayersServer(Server server) {
-        players = new Player[playerNum];
 
-        deck = new Deck();
+		players = new Player[playerNum];
 
-        dealerCards = deck.dealCards(5);
-        String dealerCardsString = "";
-        for (int i = 0; i < 5; i++) {
-            dealerCardsString += "," + dealerCards[i];
-        }
+		deck = new Deck();
 
-        for (int i = 0; i < playerNum; i++) {
-            players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
-                    deck.dealCards(2));
-        }
+		dealerCards = deck.dealCards(5);
+		String dealerCardsString = "";
+		for (int i = 0; i < 5; i++) {
+			dealerCardsString += "," + dealerCards[i];
+		}
 
-        // Send player info to clients (array of 14 strings)
-        for (int i = 1; i < playerNum; i++) {
-            server.sendMsg(players[i].toString() + dealerCardsString, i);
-        }
+		for (int i = 0; i < playerNum; i++) {
+			players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
+					deck.dealCards(2));
+		}
 
-        startingPos = INITIAL_POSITION;
-        smallBlind = INITIAL_SMALL_BLIND;
-        bigBlind = INITIAL_BIG_BLIND;
+		// players[0]: server player
+		ownPlayer = players[0];
 
-        setPlayerBlinds(startingPos, true);
+		setPlayerBlinds(startingPos, true);
 
-        currentPlayer = startingPos;
-        players[currentPlayer].setCurrent(true);
-    }
+		currentPlayer = startingPos;
+		players[currentPlayer].setCurrent(true);
 
-    private void initializePlayersClient(Client client) {
+		// Send player info to clients (array of 14 strings)
+		String playersText = dealerCardsString;
+		for (int i = 0; i < playerNum; i++) {
+			playersText += ";" + players[i].toString();
+		}
 
-        // Read player info
-        String[] info = client.readMsg().split(",");
+		for (int i = 0; i < playerNum-1; i++) {
+			server.sendMsg(playersText, i);
+		}
 
-        // Player cards
-        Card[] playerCards = { new Card(info[7]), new Card(info[8]) };
+		startingPos = INITIAL_POSITION;
+		smallBlind = INITIAL_SMALL_BLIND;
+		bigBlind = INITIAL_BIG_BLIND;
+	}
 
-        // Dealer Cards
-        dealerCards = new Card[5];
-        for (int i = 0; i < 5; i++) {
-            dealerCards[i] = new Card(info[i + 9]);
-        }
+	private void initializePlayersClient(Client client) {
 
-        Player player = new Player(info[0], Integer.parseInt(info[1]), Integer.parseInt(info[2]),
-                Boolean.parseBoolean(info[3]), Boolean.parseBoolean(info[4]), Boolean.parseBoolean(info[5]),
-                Boolean.parseBoolean(info[6]), playerCards);
+		// Read players info
+		String[] allPlayers = client.readMsg().split(";");
 
-        startingPos = INITIAL_POSITION;
-        smallBlind = INITIAL_SMALL_BLIND;
-        bigBlind = INITIAL_BIG_BLIND;
+		players = new Player[playerNum];
 
-        setPlayerBlinds(startingPos, true);
-    }
+		for (int i = 0; i < playerNum; i++) {
+			players[i] = new Player(allPlayers[i]);
+		}
 
-    private void raiseBlinds() {
-        smallBlind *= BLIND_RAISE_RATIO;
-        bigBlind *= BLIND_RAISE_RATIO;
-    }
+		// Dealer Cards
+		dealerCards = new Card[5];
+		for (int i = 0; i < 5; i++) {
+			dealerCards[i] = new Card(allPlayers[playerNum].split(",")[i]);
+		}
 
-    private void setPlayerBlinds(int startingPos, boolean state) {
-        players[(startingPos - 1) % playerNum].setBigBlind(state);
-        players[(startingPos - 2) % playerNum].setSmallBlind(state);
-    }
+		ownPlayer = players[client.getPosition()];
 
-    // execute when fold button is clicked
-    public void fold() {
-        players[currentPlayer].setFolded(true);
-    }
+		startingPos = INITIAL_POSITION;
+		smallBlind = INITIAL_SMALL_BLIND;
+		bigBlind = INITIAL_BIG_BLIND;
+	}
 
-    // execute when call button is clicked
-    public void call(int wager) {
-        players[currentPlayer].editCurrentMoney((-1) * wager);
-        increasePot(wager);
-    }
+	private void raiseBlinds() {
+		smallBlind *= BLIND_RAISE_RATIO;
+		bigBlind *= BLIND_RAISE_RATIO;
+	}
 
-    // execute when bet button is clicked
-    public void bet(int wager) {
-        players[currentPlayer].editCurrentMoney((-1) * wager);
-        increasePot(wager);
-    }
+	private void setPlayerBlinds(int startingPos, boolean state) {
+		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
+		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
+	}
 
-    private void checkEliminated() {
-        for (Player player : players) {
-            if (player.getCurrentMoney() == 0) {
-                removePlayer(player.getPlayerPosition());
-            }
-        }
-    }
+	// execute when fold button is clicked
+	private void fold() {
+		players[currentPlayer].setFolded(true);
+		// dissapear cards
+		sendAction(0, 0);
+	}
 
-    private void removePlayer(int index) {
-        Player playersTemp[] = new Player[this.playerNum];
-        for (Player player : players) {
-            if (player.getPlayerPosition() != index) {
-                playersTemp[player.getPlayerPosition()] = player;
-            }
-        }
-    }
+	// execute when call button is clicked
+	private void call(int wager) {
+		players[currentPlayer].editCurrentMoney((-1) * wager);
+		players[currentPlayer].editAmountCalled(wager);
+		increasePot(wager);
+		sendAction(1, wager);
+	}
 
-    private void assignPot() {
-        ArrayList<Double> handVals = new ArrayList<Double>();
-        for (Player player : players) {
-            if (!player.hasFolded()) {
-                handVals.add(new Hand(getDealerCards(), player.getCards()).getHandValue());
-            }
-        }
-        double winningHand = Collections.max(handVals);
-        int winnerIndex = handVals.indexOf(winningHand);
-        players[winnerIndex].editCurrentMoney(pot);
-    }
+	// execute when bet button is clicked
+	private void bet(int wager) {
+		players[currentPlayer].editCurrentMoney((-1) * wager);
+		players[currentPlayer].editAmountCalled(wager);
+		increasePot(wager);
+		sendAction(2, wager);
+	}
 
-    private void increasePot(int wager) {
-        pot += wager;
-    }
+	private void sendAction(int actionID, int wager) {
+		String msg = String.valueOf(actionID) + "," + String.valueOf(pot) + ","
+				+ String.valueOf(ownPlayer.getCurrentMoney() + "," + String.valueOf(ownPlayer.getAmountCalled()));
+
+		if (ownPlayer.getPlayerPosition() == 0) { // Server
+			for (int i = 0; i < playerNum-1; i++) {
+				server.sendMsg(msg, i);
+			}
+		} else {
+			client.sendMsg(msg);
+		}
+	}
+
+	private void checkEliminated() {
+		for (Player player : players) {
+			if (player.getCurrentMoney() == 0) {
+				removePlayer(player.getPlayerPosition());
+			}
+		}
+	}
+
+	private void removePlayer(int index) {
+		Player playersTemp[] = new Player[this.playerNum];
+		for (Player player : players) {
+			if (player.getPlayerPosition() != index) {
+				playersTemp[player.getPlayerPosition()] = player;
+			}
+		}
+	}
+
+	private void assignPot() {
+		ArrayList<Double> handVals = new ArrayList<Double>();
+		for (Player player : players) {
+			if (!player.hasFolded()) {
+				handVals.add(new Hand(getDealerCards(), player.getCards()).getHandValue());
+			}
+		}
+		double winningHand = Collections.max(handVals);
+		int winnerIndex = handVals.indexOf(winningHand);
+		players[winnerIndex].editCurrentMoney(pot);
+	}
+
+	private void increasePot(int wager) {
+		pot += wager;
+	}
 
 	// -----------------------------------------
 	// SCENE METHODS
 	// -----------------------------------------
+
+	private void setActive(int current) {
+		if (current == ownPlayer.getPlayerPosition()) {
+			activateActions();
+
+			while (!actionMade) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			disableActions();
+		}
+		else{
+			//highlightCards(current);
+
+			String msg;
+
+			if (ownPlayer.getPlayerPosition() == 0){	// Server
+				msg = server.readMsg(current);
+
+				for (int i = 0; i< playerNum-1; i++){
+					if (i != current){
+						server.sendMsg(msg, i);
+					}
+				}	
+			}
+			else{		// Client
+				msg = client.readMsg();
+			}
+
+			String[] msgArr = msg.split(",");
+
+			if (Integer.valueOf(msgArr[0]) == 0){
+				// fold current player UI
+
+				players[current].hasFolded();
+			}
+			else if (Integer.valueOf(msgArr[0]) == 1){
+				// playerMon[current] = msgArr[2];
+				// playerAmCl[current] = msgArr[3];
+				pot = Integer.valueOf(msgArr[1]);
+			}
+			else{
+				// playerMon[current] = msgArr[2];
+				// playerAmCl[current] = msgArr[3];
+				pot = Integer.valueOf(msgArr[1]);
+			}
+
+			// Unhighlight
+		}
+	}
+
+	private void highlightCards(){
+
+	}
+
+	private void activateActions(){
+		fold.setDisable(false);
+		check.setDisable(false);
+		bet.setDisable(false);
+		actionMade = false;
+	}
+
+	private void disableActions(){
+		fold.setDisable(true);
+		check.setDisable(true);
+		bet.setDisable(true);
+		actionMade = true;
+	}
 
 	private void initializeScene(){
 		// Set main pane and two sub panes: one for the game display one for the control panel
 		BorderPane root = new BorderPane();
 
 		createActionControl(root);
+
+		disableActions();
 
 		// Main game pane
 		Pane cardPane = new Pane();
@@ -343,15 +465,70 @@ public class GameScene {
 		check = new Button();
 		check.setGraphic(checkImg);
 		check.setOnMouseClicked(e -> {
-			call(wager);
+			call(amountToCall);
 		});
 		bet = new Button();
 		bet.setGraphic(betImg);
 		bet.setOnMouseClicked(e -> {
-			bet(wager);
+			bet(Integer.parseInt(label.getText()));
 		});
 		// Add item to vbox
 		vb.getChildren().addAll(name, money, fold, check, bet, betSlider, label);
+
+
+
+		Rectangle p1rectangle = new Rectangle(45, 500, 150, 100);
+		p1rectangle.setStroke(Color.WHITE);
+
+		Rectangle p2rectangle = new Rectangle(255, 500, 150, 100);
+		p2rectangle.setStroke(Color.WHITE);
+
+		Rectangle p3rectangle = new Rectangle(465, 500, 150, 100);
+		p3rectangle.setStroke(Color.WHITE);
+
+		Rectangle p4rectangle = new Rectangle(675, 500, 150, 100);
+		p4rectangle.setStroke(Color.WHITE);
+
+		Rectangle Drectangle = new Rectangle(260, 250, 360, 100);
+		Drectangle.setStroke(Color.WHITE);
+
+		Pane pn = new Pane();
+
+		pn.getChildren().addAll(p1rectangle, p2rectangle, p3rectangle, p4rectangle, Drectangle);
+
+
+
+		HBox menuBox = new HBox();
+		String[] menuNames = {"Player 1", "Player 2", "Player 3", "Player 4", "Player 5"};
+		MenuItem player1 = new MenuItem("Player 1", 20);
+		MenuItem player2 = new MenuItem("Player 2", 20);
+		MenuItem player3 = new MenuItem("Player 3", 20);
+		MenuItem player4 = new MenuItem("Player 4", 20);
+		MenuItem player5 = new MenuItem("Player 5", 20);
+		MenuItem raiseAmount = new MenuItem("RAISE AMOUNT:", 20);
+		MenuItem callAmount = new MenuItem("CALL AMOUNT:", 20);
+		MenuItem foldItem = new MenuItem("FOLD", 20);
+		MenuItem checkItem = new MenuItem("CHECK", 20);
+		MenuItem totalAmount = new MenuItem("$ ", 20);
+		MenuItem totalAmount2 = new MenuItem("$ ", 20);
+		MenuItem totalAmount3= new MenuItem("$ ", 20);
+		MenuItem totalAmount4 = new MenuItem("$ ", 20);
+
+
+		HBox menuBox2 = new HBox();
+		MenuItem[] menuVariables = {player1, player2, player3, player4};
+		MenuItem[] menuVariables2 = {raiseAmount, callAmount, checkItem, foldItem};
+		MenuItem[] menuVariables3 = {totalAmount, totalAmount2, totalAmount3, totalAmount4};
+		menuBox.setSpacing(72);
+		menuBox2.setSpacing(133);
+		for(int i = 0; i < 4; i++)
+		{
+				menuBox.getChildren().add(menuVariables[i]);
+		}
+		for(int i = 0; i < 4; i++)
+		{
+				menuBox2.getChildren().add(menuVariables3[i]);
+		}
 	}
 
 	private void setPlayerCards(Pane cardPane, double delayDuration){
