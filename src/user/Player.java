@@ -26,17 +26,27 @@ public class Player {
 		this.isSmallBlind = isSmallBlind;
 		this.folded = folded;
 		this.cards = cards;
+		amountCalled = 0;
 	}
 
-	public void play(int amountToCall){
-		if (amountCalled < amountToCall){
-			// decision is called by UI
-		}
+	public Player(String player){
+		String[] players = player.split(",");
+
+		this.playerName = players[0];
+		this.currentMoney = Integer.valueOf(players[1]);
+		this.playerPosition = Integer.valueOf(players[2]);
+		this.isCurrent = Boolean.valueOf(players[3]);
+		this.isBigBlind = Boolean.valueOf(players[4]);
+		this.isSmallBlind = Boolean.valueOf(players[5]);
+		this.folded = Boolean.valueOf(players[6]);
+		this.cards[0] = new Card(players[7]);
+		this.cards[1] = new Card(players[8]);
+		amountCalled = 0;
 	}
 
 	public String toString(){
-		return playerName + "," + currentMoney + "," + playerPosition + "," + isCurrent + "," +
-				isBigBlind + "," + isSmallBlind + "," + folded + "," + cards[0].toString() + "," + cards[1].toString();
+		return playerName + "," + String.valueOf(currentMoney) + "," + String.valueOf(playerPosition) + "," + String.valueOf(isCurrent) + "," +
+			String.valueOf(isBigBlind) + "," + String.valueOf(isSmallBlind) + "," + String.valueOf(folded) + "," + cards[0].toString() + "," + cards[1].toString();
 	}
 
 	public Card[] getCards(){
@@ -75,8 +85,10 @@ public class Player {
 	/**
 	 * @param isBigBlind the isBigBlind to set
 	 */
-	public void setBigBlind(boolean isBigBlind) {
+	public void setBigBlind(boolean isBigBlind, int bigBlind) {
 		this.isBigBlind = isBigBlind;
+        this.currentMoney -= bigBlind;
+        this.amountCalled = bigBlind;
 	}
 
 	/**
@@ -89,8 +101,10 @@ public class Player {
 	/**
 	 * @param isSmallBlind the isSmallBlind to set
 	 */
-	public void setSmallBlind(boolean isSmallBlind) {
+	public void setSmallBlind(boolean isSmallBlind, int smallBlind) {
 		this.isSmallBlind = isSmallBlind;
+        this.currentMoney = smallBlind;
+        this.amountCalled = smallBlind;
 	}
 
 	/**
@@ -119,6 +133,14 @@ public class Player {
 	 */
 	public void editCurrentMoney(int currentMoney) {
 		this.currentMoney += currentMoney;
+	}
+
+	public void editAmountCalled(int wager){
+		this.amountCalled += wager;
+	}
+
+	public int getAmountCalled(){
+		return amountCalled;
 	}
 
 	/**
