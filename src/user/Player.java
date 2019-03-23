@@ -35,6 +35,14 @@ public class Player {
 		String.valueOf(folded) +"," + cards[0].toString() + "," + cards[1].toString();
 	}
 
+	public void setAmountCalled(int amount){
+		this.amountCalled = amount;
+	}
+
+	public void setMoney(int amount){
+		this.currentMoney = amount;
+	}
+
 	public Card[] getCards(){
 		return cards;
 	}
