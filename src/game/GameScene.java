@@ -49,6 +49,8 @@ public class GameScene {
 	private MenuItem[] playerMI;
 	private MenuItem[] playerAmountCalledMI;
 	private MenuItem[] playerMoneyMI;
+	private MenuItem currentCardLabel;
+	private MenuItem potLabel;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -467,12 +469,19 @@ public class GameScene {
 			playerBox.setLayoutY(440);
 			cardPane.getChildren().add(playerBox);
 		}
-		MenuItem currentCardLabel = new MenuItem("Current Cards",20);
+		currentCardLabel = new MenuItem("Current Cards",20);
 		HBox currentCardsLabelBox = new HBox();
 		currentCardsLabelBox.getChildren().add(currentCardLabel);
 		currentCardsLabelBox.setLayoutX(990);
 		currentCardsLabelBox.setLayoutY(350);
 		cardPane.getChildren().add(currentCardsLabelBox);
+		
+		potLabel = new MenuItem("Pot $",20);
+		HBox potLabelBox = new HBox();
+		potLabelBox.getChildren().add(potLabel);
+		potLabelBox.setLayoutX(350);
+		potLabelBox.setLayoutY(350);
+		cardPane.getChildren().add(potLabelBox);
 
 		// Dealer frame
 		dealerFrame = new Rectangle(260, 250, 360, 100);
@@ -570,8 +579,8 @@ public class GameScene {
 		Deck.resetDeck();
 		int cardGap = 0;
 		
-		Card[] playerDuoCards = Deck.dealCards(2);
-		ImageView[] playerDuoImages = {new Card(playerDuoCards[0].toString()).getCardImage(), new Card(playerDuoCards[1].toString()).getCardImage()};
+		Card[] playerDuoCards = Deck.dealCards(6);
+		ImageView[] playerDuoImages = {new Card(playerDuoCards[0].toString()).getCardImage(), new Card(playerDuoCards[1].toString()).getCardImage(),new Card(playerDuoCards[3].toString()).getCardImage(), new Card(playerDuoCards[4].toString()).getCardImage()};
 		
 		playerDuoImages[0].setLayoutX(1060);
 		playerDuoImages[0].setLayoutY(700);
@@ -583,6 +592,17 @@ public class GameScene {
 		playerDuoImages[1].setFitHeight(150);
 		playerDuoImages[1].setFitWidth(100);
 		playerDuoImages[1].setRotate(15);
+		
+		playerDuoImages[2].setLayoutX(1060);
+		playerDuoImages[2].setLayoutY(700);
+		playerDuoImages[2].setFitHeight(150);
+		playerDuoImages[2].setFitWidth(100);
+		playerDuoImages[2].setRotate(-15);
+		playerDuoImages[3].setLayoutX(1115);
+		playerDuoImages[3].setLayoutY(700);
+		playerDuoImages[3].setFitHeight(150);
+		playerDuoImages[3].setFitWidth(100);
+		playerDuoImages[3].setRotate(15);
 
 
 		for (int i = 0; i < playerNum; i++) {
@@ -609,11 +629,10 @@ public class GameScene {
 		}
 		
 		for (int i = 0; i < playerNum; i++) {
-				;
-
-				cardPane.getChildren().add(playerDuoImages[i]);
-
 				
+				if(i==2)
+					break;
+				cardPane.getChildren().add(playerDuoImages[i]);
 				Line line = new Line(40, 50, 0,-225);
 
 				PathTransition transition = new PathTransition();
