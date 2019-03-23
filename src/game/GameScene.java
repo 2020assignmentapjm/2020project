@@ -93,7 +93,7 @@ public class GameScene {
 
 		initializePlayersServer(this.server);
 
-		//runGame();
+		new Thread(() -> runGame()).start();
 	}
 
 	public GameScene(Client client, int clientNum) {
@@ -108,7 +108,7 @@ public class GameScene {
 
 		initializePlayersClient(this.client);
 		
-		//runGame();
+		new Thread(() -> runGame()).start();
 	}
 
 	// -----------------------------------------
@@ -143,11 +143,11 @@ public class GameScene {
 
 		while (!gameEnded) { // For every round
 
-			amountToCall = bigBlind;
 
 			while (!roundEnded) { // Within 1 round
 
 				if (!players[currentPlayer].hasFolded()) {
+					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
 
 					setActive(currentPlayer); // decision is called by UI
 
@@ -255,7 +255,7 @@ public class GameScene {
 			dealerCards[i] = new Card(cardsInfo[playerNum].split(",")[i]);
 		}
 
-		ownPlayer = players[client.getPosition()];
+		ownPlayer = players[client.getPosition() + 1];
 
 		setPlayerBlinds(startingPos, true);
 
@@ -278,7 +278,10 @@ public class GameScene {
 	// execute when fold button is clicked
 	private void fold() {
 		players[currentPlayer].setFolded(true);
-		// dissapear cards
+		playerCardImages[currentPlayer][0].setOpacity(0);
+		playerCardImages[currentPlayer][1].setOpacity(0);
+		sendAction(0, 0);
+		actionMade = true;
 		sendAction(0, 0);
 	}
 
@@ -286,17 +289,35 @@ public class GameScene {
 	private void call(int wager) {
 		players[currentPlayer].editCurrentMoney((-1) * wager);
 		players[currentPlayer].editAmountCalled(wager);
+		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+        playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+        
 		increasePot(wager);
 		sendAction(1, wager);
+		actionMade = true;
 	}
 
 	// execute when bet button is clicked
 	private void bet(int wager) {
 		players[currentPlayer].editCurrentMoney((-1) * wager);
 		players[currentPlayer].editAmountCalled(wager);
+		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+	    playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+	 
 		increasePot(wager);
 		sendAction(2, wager);
+		actionMade = true;
 	}
+	
+	private int getMaxAmToCall(){
+        int max = 0;
+        for (int i=0; i<playerNum; i++){
+            if (players[i].getAmountCalled() > max){
+                max = players[i].getAmountCalled();
+            }
+        }
+        return max;
+    }
 
 	private void sendAction(int actionID, int wager) {
 		String msg = String.valueOf(actionID) + "," + String.valueOf(pot) + ","
@@ -363,7 +384,7 @@ public class GameScene {
 	private void setActive(int current) {
 		if (current == ownPlayer.getPlayerPosition()) {
 			activateActions();
-
+			actionMade = false;
 			while (!actionMade) {
 				try {
 					Thread.sleep(1000);
@@ -395,19 +416,20 @@ public class GameScene {
 			String[] msgArr = msg.split(",");
 
 			if (Integer.valueOf(msgArr[0]) == 0){
-				// fold current player UI
+				playerCardImages[currentPlayer][0].setOpacity(0);
+                playerCardImages[currentPlayer][1].setOpacity(0);
+ 
+                players[current].hasFolded();
+			}
 
-				players[current].hasFolded();
-			}
-			else if (Integer.valueOf(msgArr[0]) == 1){
-				// playerMon[current] = msgArr[2];
-				// playerAmCl[current] = msgArr[3];
-				pot = Integer.valueOf(msgArr[1]);
-			}
 			else{
-				// playerMon[current] = msgArr[2];
-				// playerAmCl[current] = msgArr[3];
-				pot = Integer.valueOf(msgArr[1]);
+				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
+                players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
+ 
+                playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
+                players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+ 
+                pot = Integer.valueOf(msgArr[1]);
 			}
 
 			// Unhighlight
