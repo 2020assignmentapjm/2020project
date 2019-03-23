@@ -38,7 +38,6 @@ public class GameScene {
 	private Slider betSlider;
 	private ImageView[] dealerCardImages;
 	private ImageView[][] playerCardImages;
-	private ImageView[] playerDuoCardImages;
 	private static Scene scene;
 	private static Stage stage;
 	private Button fold, check, bet;
@@ -49,8 +48,6 @@ public class GameScene {
 	private MenuItem[] playerMI;
 	private MenuItem[] playerAmountCalledMI;
 	private MenuItem[] playerMoneyMI;
-	private MenuItem currentCardLabel;
-	private MenuItem potLabel;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -135,7 +132,8 @@ public class GameScene {
 		return playerNum;
 	}
 
-	public void runGame() {
+	public void runGame(){
+
 		roundNum = 0;
 
 		gameEnded = false;
@@ -143,42 +141,44 @@ public class GameScene {
 
 		while (!gameEnded) { // For every round
 
-
 			while (!roundEnded) { // Within 1 round
-
+				System.out.print(currentPlayer);
 				if (!players[currentPlayer].hasFolded()) {
+
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
 
+					System.out.println("Set active in progress");
 					setActive(currentPlayer); // decision is called by UI
+					System.out.println("Set active successfull");
 
 				}
-				players[currentPlayer].setCurrent(false);
+					System.out.println("DOESNT LOOP!");
+					players[currentPlayer].setCurrent(false);
+					currentPlayer = (currentPlayer + 1) % playerNum;
+					System.out.print("Needs set new player!!");
+					players[currentPlayer].setCurrent(true);
+					roundEnded = isRoundEnd();
+					System.out.print("Needs to loop!!");
+				}
 
-				currentPlayer = (currentPlayer + 1) % playerNum;
+			// End of Round
+			// Check who won
+			assignPot(); // Assigns pot to a player
+			checkEliminated(); // Check if someone was eliminated
 
-				players[currentPlayer].setCurrent(true);
+			// TODO: reset
+
+			setPlayerBlinds(startingPos, false);
+
+			startingPos = (startingPos + 1) % playerNum;
+
+			setPlayerBlinds(startingPos, true);
+
+			roundNum++;
+
+			if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
+				raiseBlinds();
 			}
-
-			//
-		}
-
-		// End of Round
-		// Check who won
-		assignPot(); // Assigns pot to a player
-		checkEliminated(); // Check if someone was eliminated
-
-		// TODO: reset
-
-		setPlayerBlinds(startingPos, false);
-
-		startingPos = (startingPos + 1) % playerNum;
-
-		setPlayerBlinds(startingPos, true);
-
-		roundNum++;
-
-		if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
-			raiseBlinds();
 		}
 	}
 
@@ -255,7 +255,7 @@ public class GameScene {
 			dealerCards[i] = new Card(cardsInfo[playerNum].split(",")[i]);
 		}
 
-		ownPlayer = players[client.getPosition() + 1];
+		ownPlayer = players[client.getPosition() + 1];	// Including server
 
 		setPlayerBlinds(startingPos, true);
 
@@ -264,6 +264,28 @@ public class GameScene {
 
 		adjustScene();
 	}
+	
+	private boolean isRoundEnd(){
+		  int playersFolded = 0;
+		//  boolean sameCall = true;
+		  for (Player player :players) {
+		    if (player.hasFolded()) {
+		      playersFolded++;
+		    }
+		  }
+	/*	  for (int i = 1; i < playerNum; i++){
+			  if (players[i].getAmountCalled() != players[i-1].getAmountCalled()) {
+				  sameCall = false;
+			  }
+		  }*/
+		  if (playersFolded == playerNum-1) {
+		    return true;
+		  }
+		/*  if (sameCall = true) {
+			  return true;
+		  }*/
+		  return false;
+		}
 
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
@@ -282,42 +304,53 @@ public class GameScene {
 		playerCardImages[currentPlayer][1].setOpacity(0);
 		sendAction(0, 0);
 		actionMade = true;
-		sendAction(0, 0);
 	}
 
 	// execute when call button is clicked
 	private void call(int wager) {
-		players[currentPlayer].editCurrentMoney((-1) * wager);
-		players[currentPlayer].editAmountCalled(wager);
-		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
-        playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
-        
-		increasePot(wager);
-		sendAction(1, wager);
-		actionMade = true;
+		if (players[currentPlayer].getCurrentMoney() < wager) {
+			System.out.println("OverBET");
+		}
+		else {
+			players[currentPlayer].editCurrentMoney((-1) * wager);
+			players[currentPlayer].editAmountCalled(wager);
+	
+			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+	
+			increasePot(wager);
+			sendAction(1, wager);
+			actionMade = true;
+		}
 	}
 
 	// execute when bet button is clicked
 	private void bet(int wager) {
-		players[currentPlayer].editCurrentMoney((-1) * wager);
-		players[currentPlayer].editAmountCalled(wager);
-		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
-	    playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
-	 
-		increasePot(wager);
-		sendAction(2, wager);
-		actionMade = true;
-	}
+		if (players[currentPlayer].getCurrentMoney() < wager) {
+			System.out.println("OverBET");
+		}
+		else {
+			players[currentPlayer].editCurrentMoney((-1) * wager);
+			players[currentPlayer].editAmountCalled(wager);
 	
+			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+	
+			increasePot(wager);
+			sendAction(2, wager);
+			actionMade = true;
+		}
+	}
+
 	private int getMaxAmToCall(){
-        int max = 0;
-        for (int i=0; i<playerNum; i++){
-            if (players[i].getAmountCalled() > max){
-                max = players[i].getAmountCalled();
-            }
-        }
-        return max;
-    }
+		int max = 0;
+		for (int i=0; i<playerNum; i++){
+			if (players[i].getAmountCalled() > max){
+				max = players[i].getAmountCalled();
+			}
+		}
+		return max;
+	}
 
 	private void sendAction(int actionID, int wager) {
 		String msg = String.valueOf(actionID) + "," + String.valueOf(pot) + ","
@@ -354,8 +387,10 @@ public class GameScene {
 		for (Player player : players) {
 			if (!player.hasFolded()) {
 				handVals.add(new Hand(getDealerCards(), player.getCards()).getHandValue());
+				System.out.println(player.getCards());
 			}
 		}
+		System.out.println(getDealerCards());
 		double winningHand = Collections.max(handVals);
 		int winnerIndex = handVals.indexOf(winningHand);
 		players[winnerIndex].editCurrentMoney(pot);
@@ -382,9 +417,12 @@ public class GameScene {
 	}
 
 	private void setActive(int current) {
+
 		if (current == ownPlayer.getPlayerPosition()) {
+			System.out.print("server active");
 			activateActions();
 			actionMade = false;
+
 			while (!actionMade) {
 				try {
 					Thread.sleep(1000);
@@ -396,43 +434,45 @@ public class GameScene {
 			disableActions();
 		}
 		else{
-			//highlightCards(current);
-
+			// TODO: highlightCards(current);
+			System.out.println("Client active");
 			String msg;
 
 			if (ownPlayer.getPlayerPosition() == 0){	// Server
-				msg = server.readMsg(current);
+				System.out.println("Server reading from client");
+				msg = server.readMsg(current-1);
 
-				for (int i = 0; i< playerNum-1; i++){
+				for (int i = 1; i< playerNum; i++){
 					if (i != current){
 						server.sendMsg(msg, i);
 					}
 				}	
+				System.out.println("Sent msg to clients");
 			}
 			else{		// Client
 				msg = client.readMsg();
 			}
+			if (ownPlayer.getPlayerPosition() != 0) {
+				System.out.println("Client must read msg, this is user: "+  ownPlayer.getPlayerPosition());
+				String[] msgArr = msg.split(",");
 
-			String[] msgArr = msg.split(",");
-
-			if (Integer.valueOf(msgArr[0]) == 0){
-				playerCardImages[currentPlayer][0].setOpacity(0);
-                playerCardImages[currentPlayer][1].setOpacity(0);
- 
-                players[current].hasFolded();
+				if (Integer.valueOf(msgArr[0]) == 0){
+					playerCardImages[currentPlayer][0].setOpacity(0);
+					playerCardImages[currentPlayer][1].setOpacity(0);
+					players[current].hasFolded();
+				}
+				else{
+					playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
+					players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
+	
+					playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
+					players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+	
+					pot = Integer.valueOf(msgArr[1]);
+				}
 			}
 
-			else{
-				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
-                players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
- 
-                playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
-                players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
- 
-                pot = Integer.valueOf(msgArr[1]);
-			}
-
-			// Unhighlight
+			// TODO: Unhighlight
 		}
 	}
 
@@ -444,14 +484,12 @@ public class GameScene {
 		fold.setDisable(false);
 		check.setDisable(false);
 		bet.setDisable(false);
-		actionMade = false;
 	}
 
 	private void disableActions(){
 		fold.setDisable(true);
 		check.setDisable(true);
 		bet.setDisable(true);
-		actionMade = true;
 	}
 
 	private void initializeScene(){
@@ -491,19 +529,6 @@ public class GameScene {
 			playerBox.setLayoutY(440);
 			cardPane.getChildren().add(playerBox);
 		}
-		currentCardLabel = new MenuItem("Current Cards",20);
-		HBox currentCardsLabelBox = new HBox();
-		currentCardsLabelBox.getChildren().add(currentCardLabel);
-		currentCardsLabelBox.setLayoutX(990);
-		currentCardsLabelBox.setLayoutY(350);
-		cardPane.getChildren().add(currentCardsLabelBox);
-		
-		potLabel = new MenuItem("Pot $",20);
-		HBox potLabelBox = new HBox();
-		potLabelBox.getChildren().add(potLabel);
-		potLabelBox.setLayoutX(350);
-		potLabelBox.setLayoutY(350);
-		cardPane.getChildren().add(potLabelBox);
 
 		// Dealer frame
 		dealerFrame = new Rectangle(260, 250, 360, 100);
@@ -582,7 +607,7 @@ public class GameScene {
 		bet = new Button();
 		bet.setGraphic(betImg);
 		bet.setOnMouseClicked(e -> {
-			bet(Integer.parseInt(label.getText()));
+			bet(Integer.parseInt((label.getText()).substring(2)));
 		});
 		// Add item to vbox
 		vb.getChildren().addAll(name, money, fold, check, bet, betSlider, label);
@@ -593,39 +618,9 @@ public class GameScene {
 		return new ImageView(new File("images/Cards/backCard.png").toURI().toString());
 	}
 
-	
-	
 	private void setPlayerCards(Pane cardPane, double delayDuration){
 		playerCardImages = new ImageView[4][2];
-		playerDuoCardImages = new ImageView[2];
-		Deck.resetDeck();
 		int cardGap = 0;
-		
-		Card[] playerDuoCards = Deck.dealCards(6);
-		ImageView[] playerDuoImages = {new Card(playerDuoCards[0].toString()).getCardImage(), new Card(playerDuoCards[1].toString()).getCardImage(),new Card(playerDuoCards[3].toString()).getCardImage(), new Card(playerDuoCards[4].toString()).getCardImage()};
-		
-		playerDuoImages[0].setLayoutX(1060);
-		playerDuoImages[0].setLayoutY(700);
-		playerDuoImages[0].setFitHeight(150);
-		playerDuoImages[0].setFitWidth(100);
-		playerDuoImages[0].setRotate(-15);
-		playerDuoImages[1].setLayoutX(1115);
-		playerDuoImages[1].setLayoutY(700);
-		playerDuoImages[1].setFitHeight(150);
-		playerDuoImages[1].setFitWidth(100);
-		playerDuoImages[1].setRotate(15);
-		
-		playerDuoImages[2].setLayoutX(1060);
-		playerDuoImages[2].setLayoutY(700);
-		playerDuoImages[2].setFitHeight(150);
-		playerDuoImages[2].setFitWidth(100);
-		playerDuoImages[2].setRotate(-15);
-		playerDuoImages[3].setLayoutX(1115);
-		playerDuoImages[3].setLayoutY(700);
-		playerDuoImages[3].setFitHeight(150);
-		playerDuoImages[3].setFitWidth(100);
-		playerDuoImages[3].setRotate(15);
-
 
 		for (int i = 0; i < playerNum; i++) {
 			for (int j = 0; j < 2; j++) {
@@ -647,27 +642,7 @@ public class GameScene {
 				delayDuration += 0.5;
 			}
 			cardGap += 70;
-			
 		}
-		
-		for (int i = 0; i < playerNum; i++) {
-				
-				if(i==2)
-					break;
-				cardPane.getChildren().add(playerDuoImages[i]);
-				Line line = new Line(40, 50, 0,-225);
-
-				PathTransition transition = new PathTransition();
-				transition.setNode(playerDuoImages[i]);
-				transition.setDuration(Duration.seconds(0.5));
-				transition.setPath(line);
-				transition.setDelay(Duration.seconds(delayDuration));
-				transition.play();
-
-				cardGap += 70;
-				delayDuration += 0.5;
-		}
-			
 	}
 
 	private void setDealerCards(Pane cardPane, double delayDuration){
