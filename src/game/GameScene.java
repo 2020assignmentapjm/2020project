@@ -38,11 +38,17 @@ public class GameScene {
 	private Slider betSlider;
 	private ImageView[] dealerCardImages;
 	private ImageView[][] playerCardImages;
+	private ImageView[] playerDuoCardImages;
 	private static Scene scene;
 	private static Stage stage;
 	private Button fold, check, bet;
 	private ImageView foldImg, checkImg, callImg, betImg;
 	private boolean actionMade;
+	private Rectangle[] playerFrames;
+	private Rectangle dealerFrame;
+	private MenuItem[] playerMI;
+	private MenuItem[] playerAmountCalledMI;
+	private MenuItem[] playerMoneyMI;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -77,13 +83,13 @@ public class GameScene {
 
 		System.out.println("Server In Game Scene");
 
-		initializeScene();
-
 		this.playerNum = clientNum + 1; // Including the server
+
+		initializeScene();
 
 		this.server = server;
 
-		//initializePlayersServer(this.server);
+		initializePlayersServer(this.server);
 
 		//runGame();
 	}
@@ -92,13 +98,13 @@ public class GameScene {
 
 		System.out.println("Client In Game Scene");
 
-		initializeScene();
-
 		this.playerNum = clientNum + 1; // Including the server
+
+		initializeScene();
 
 		this.client = client;
 
-		//initializePlayersClient(this.client);
+		initializePlayersClient(this.client);
 		
 		//runGame();
 	}
@@ -178,12 +184,19 @@ public class GameScene {
 
 		players = new Player[playerNum];
 
+		startingPos = INITIAL_POSITION;
+		smallBlind = INITIAL_SMALL_BLIND;
+		bigBlind = INITIAL_BIG_BLIND;
+
 		deck = new Deck();
 
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
-			dealerCardsString += "," + dealerCards[i];
+			if (i > 0){
+				dealerCardsString += ",";
+			}
+			dealerCardsString += dealerCards[i];
 		}
 
 		for (int i = 0; i < playerNum; i++) {
@@ -199,43 +212,55 @@ public class GameScene {
 		currentPlayer = startingPos;
 		players[currentPlayer].setCurrent(true);
 
-		// Send player info to clients (array of 14 strings)
-		String playersText = dealerCardsString;
+
+		// Send cards to clients
+		String playersText = "";
 		for (int i = 0; i < playerNum; i++) {
-			playersText += ";" + players[i].toString();
+			playersText += players[i].getCards()[0] + "," + players[i].getCards()[1] + ";";
 		}
+		playersText += dealerCardsString;
 
 		for (int i = 0; i < playerNum-1; i++) {
 			server.sendMsg(playersText, i);
 		}
 
-		startingPos = INITIAL_POSITION;
-		smallBlind = INITIAL_SMALL_BLIND;
-		bigBlind = INITIAL_BIG_BLIND;
+		adjustScene();
 	}
 
 	private void initializePlayersClient(Client client) {
 
-		// Read players info
-		String[] allPlayers = client.readMsg().split(";");
+		startingPos = INITIAL_POSITION;
+		smallBlind = INITIAL_SMALL_BLIND;
+		bigBlind = INITIAL_BIG_BLIND;
 
 		players = new Player[playerNum];
 
+		// Read players info
+		String[] cardsInfo = client.readMsg().split(";");
+
 		for (int i = 0; i < playerNum; i++) {
-			players[i] = new Player(allPlayers[i]);
+			Card[] playerCards = new Card[2];
+			playerCards[0] = new Card(cardsInfo[i].split(",")[0]);
+			playerCards[1] = new Card(cardsInfo[i].split(",")[1]);
+
+			players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
+						playerCards);
 		}
 
 		// Dealer Cards
 		dealerCards = new Card[5];
 		for (int i = 0; i < 5; i++) {
-			dealerCards[i] = new Card(allPlayers[playerNum].split(",")[i]);
+			dealerCards[i] = new Card(cardsInfo[playerNum].split(",")[i]);
 		}
 
 		ownPlayer = players[client.getPosition()];
 
-		startingPos = INITIAL_POSITION;
-		smallBlind = INITIAL_SMALL_BLIND;
-		bigBlind = INITIAL_BIG_BLIND;
+		setPlayerBlinds(startingPos, true);
+
+		currentPlayer = startingPos;
+		players[currentPlayer].setCurrent(true);
+
+		adjustScene();
 	}
 
 	private void raiseBlinds() {
@@ -245,7 +270,7 @@ public class GameScene {
 
 	private void setPlayerBlinds(int startingPos, boolean state) {
 		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
-		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
+		players[(((startingPos - 2) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
 	}
 
 	// execute when fold button is clicked
@@ -320,6 +345,18 @@ public class GameScene {
 	// -----------------------------------------
 	// SCENE METHODS
 	// -----------------------------------------
+
+	private void adjustScene(){
+		for (int i=0; i<playerNum; i++){
+			if (players[i].getAmountCalled() == 0){
+				playerAmountCalledMI[i].setText("");
+			}
+			else{
+				playerAmountCalledMI[i].setText("$ " + String.valueOf(players[i].getAmountCalled()));
+			}
+			playerMoneyMI[i].setText("$ " + String.valueOf(players[i].getCurrentMoney()));
+		}
+	}
 
 	private void setActive(int current) {
 		if (current == ownPlayer.getPlayerPosition()) {
@@ -404,11 +441,53 @@ public class GameScene {
 		// Main game pane
 		Pane cardPane = new Pane();
 
+
+		// Player frames
+		playerFrames = new Rectangle[playerNum];
+		playerMI = new MenuItem[playerNum];
+		playerAmountCalledMI = new MenuItem[playerNum];
+		playerMoneyMI = new MenuItem[playerNum];
+
+		for (int i=0; i<playerNum; i++){
+			playerFrames[i] = new Rectangle(45 + (210 * i), 500, 150, 100);
+			playerFrames[i].setStroke(Color.WHITE);
+
+			VBox playerBox = new VBox();
+
+			playerMI[i] = new MenuItem("Player " + (i + 1), 20);
+
+			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
+			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
+			
+			playerMoneyMI[i] = new MenuItem("$", 20);
+			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
+
+			playerBox.getChildren().addAll(playerAmountCalledMI[i], playerMI[i], playerMoneyMI[i]);
+			playerBox.setLayoutX(50 + (210 * i));
+			playerBox.setLayoutY(440);
+			cardPane.getChildren().add(playerBox);
+		}
+		MenuItem currentCardLabel = new MenuItem("Current Cards",20);
+		HBox currentCardsLabelBox = new HBox();
+		currentCardsLabelBox.getChildren().add(currentCardLabel);
+		currentCardsLabelBox.setLayoutX(990);
+		currentCardsLabelBox.setLayoutY(350);
+		cardPane.getChildren().add(currentCardsLabelBox);
+
+		// Dealer frame
+		dealerFrame = new Rectangle(260, 250, 360, 100);
+		dealerFrame.setStroke(Color.WHITE);
+
+		cardPane.getChildren().addAll(playerFrames);
+		cardPane.getChildren().addAll(dealerFrame);
+
+
+
 		// Set the center deck which is always upside down
-		ImageView imageView = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
-		imageView.setLayoutX(400);
-		imageView.setLayoutY(50);
-		cardPane.getChildren().add(imageView);
+		ImageView backCardImg = getBackCard();
+		backCardImg.setLayoutX(400);
+		backCardImg.setLayoutY(50);
+		cardPane.getChildren().add(backCardImg);
 
 		// Initialize delay duration
 		double delayDuration = 0;
@@ -416,7 +495,9 @@ public class GameScene {
 		setDealerCards(cardPane, delayDuration);
 		setPlayerCards(cardPane, delayDuration);
 
+
 		root.setCenter(cardPane);
+
 
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
@@ -444,7 +525,7 @@ public class GameScene {
 		// Slider for betting in the control panel
 		betSlider = new Slider(0, INITIAL_MONEY, 0);	// Current is minimum
 		Label label = new Label();
-		label.textProperty().bind(Bindings.format("$ %.2f", betSlider.valueProperty()));
+		label.textProperty().bind(Bindings.format("$ %.0f", betSlider.valueProperty()));
 		label.setStyle("-fx-text-fill:white");
 		betSlider.setMajorTickUnit(INITIAL_MONEY / 4);
 		betSlider.setShowTickMarks(true);
@@ -475,69 +556,38 @@ public class GameScene {
 		// Add item to vbox
 		vb.getChildren().addAll(name, money, fold, check, bet, betSlider, label);
 
-
-
-		Rectangle p1rectangle = new Rectangle(45, 500, 150, 100);
-		p1rectangle.setStroke(Color.WHITE);
-
-		Rectangle p2rectangle = new Rectangle(255, 500, 150, 100);
-		p2rectangle.setStroke(Color.WHITE);
-
-		Rectangle p3rectangle = new Rectangle(465, 500, 150, 100);
-		p3rectangle.setStroke(Color.WHITE);
-
-		Rectangle p4rectangle = new Rectangle(675, 500, 150, 100);
-		p4rectangle.setStroke(Color.WHITE);
-
-		Rectangle Drectangle = new Rectangle(260, 250, 360, 100);
-		Drectangle.setStroke(Color.WHITE);
-
-		Pane pn = new Pane();
-
-		pn.getChildren().addAll(p1rectangle, p2rectangle, p3rectangle, p4rectangle, Drectangle);
-
-
-
-		HBox menuBox = new HBox();
-		String[] menuNames = {"Player 1", "Player 2", "Player 3", "Player 4", "Player 5"};
-		MenuItem player1 = new MenuItem("Player 1", 20);
-		MenuItem player2 = new MenuItem("Player 2", 20);
-		MenuItem player3 = new MenuItem("Player 3", 20);
-		MenuItem player4 = new MenuItem("Player 4", 20);
-		MenuItem player5 = new MenuItem("Player 5", 20);
-		MenuItem raiseAmount = new MenuItem("RAISE AMOUNT:", 20);
-		MenuItem callAmount = new MenuItem("CALL AMOUNT:", 20);
-		MenuItem foldItem = new MenuItem("FOLD", 20);
-		MenuItem checkItem = new MenuItem("CHECK", 20);
-		MenuItem totalAmount = new MenuItem("$ ", 20);
-		MenuItem totalAmount2 = new MenuItem("$ ", 20);
-		MenuItem totalAmount3= new MenuItem("$ ", 20);
-		MenuItem totalAmount4 = new MenuItem("$ ", 20);
-
-
-		HBox menuBox2 = new HBox();
-		MenuItem[] menuVariables = {player1, player2, player3, player4};
-		MenuItem[] menuVariables2 = {raiseAmount, callAmount, checkItem, foldItem};
-		MenuItem[] menuVariables3 = {totalAmount, totalAmount2, totalAmount3, totalAmount4};
-		menuBox.setSpacing(72);
-		menuBox2.setSpacing(133);
-		for(int i = 0; i < 4; i++)
-		{
-				menuBox.getChildren().add(menuVariables[i]);
-		}
-		for(int i = 0; i < 4; i++)
-		{
-				menuBox2.getChildren().add(menuVariables3[i]);
-		}
 	}
 
+	private ImageView getBackCard(){
+		return new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+	}
+
+	
+	
 	private void setPlayerCards(Pane cardPane, double delayDuration){
 		playerCardImages = new ImageView[4][2];
+		playerDuoCardImages = new ImageView[2];
+		Deck.resetDeck();
 		int cardGap = 0;
+		
+		Card[] playerDuoCards = Deck.dealCards(2);
+		ImageView[] playerDuoImages = {new Card(playerDuoCards[0].toString()).getCardImage(), new Card(playerDuoCards[1].toString()).getCardImage()};
+		
+		playerDuoImages[0].setLayoutX(1060);
+		playerDuoImages[0].setLayoutY(700);
+		playerDuoImages[0].setFitHeight(150);
+		playerDuoImages[0].setFitWidth(100);
+		playerDuoImages[0].setRotate(-15);
+		playerDuoImages[1].setLayoutX(1115);
+		playerDuoImages[1].setLayoutY(700);
+		playerDuoImages[1].setFitHeight(150);
+		playerDuoImages[1].setFitWidth(100);
+		playerDuoImages[1].setRotate(15);
 
-		for (int i = 0; i < 4; i++) {
+
+		for (int i = 0; i < playerNum; i++) {
 			for (int j = 0; j < 2; j++) {
-				playerCardImages[i][j] = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+				playerCardImages[i][j] = getBackCard();
 				playerCardImages[i][j].setLayoutX(400);
 				playerCardImages[i][j].setLayoutY(50);
 				cardPane.getChildren().add(playerCardImages[i][j]);
@@ -555,7 +605,28 @@ public class GameScene {
 				delayDuration += 0.5;
 			}
 			cardGap += 70;
+			
 		}
+		
+		for (int i = 0; i < playerNum; i++) {
+				;
+
+				cardPane.getChildren().add(playerDuoImages[i]);
+
+				
+				Line line = new Line(40, 50, 0,-225);
+
+				PathTransition transition = new PathTransition();
+				transition.setNode(playerDuoImages[i]);
+				transition.setDuration(Duration.seconds(0.5));
+				transition.setPath(line);
+				transition.setDelay(Duration.seconds(delayDuration));
+				transition.play();
+
+				cardGap += 70;
+				delayDuration += 0.5;
+		}
+			
 	}
 
 	private void setDealerCards(Pane cardPane, double delayDuration){
@@ -564,7 +635,7 @@ public class GameScene {
 
 		for (int i = 0; i < 5; i++) {
 
-			dealerCardImages[i] = new ImageView(new File("images/Cards/backCard.png").toURI().toString());
+			dealerCardImages[i] = getBackCard();
 			dealerCardImages[i].setLayoutX(400);
 			dealerCardImages[i].setLayoutY(50);
 			cardPane.getChildren().add(dealerCardImages[i]);
