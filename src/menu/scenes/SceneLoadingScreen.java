@@ -47,14 +47,11 @@ public class SceneLoadingScreen {
 
                     GameScene gameScene = new GameScene(server, clientNum);
                     
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                           // Redirect window to game scene
-                            stage.setScene(GameScene.getScene());
-                            gameScene.setStage(stage);
-                        }
-                     });
+                    Platform.runLater(() -> {
+                        // Redirect window to game scene
+                        stage.setScene(GameScene.getScene());
+                        gameScene.setStage(stage);
+                    });
                     break;
                 }
 
@@ -95,13 +92,10 @@ public class SceneLoadingScreen {
  
             GameScene gameScene = new GameScene(client, Integer.valueOf(client.readMsg()));
 
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    // Redirect window to game scene
-                    stage.setScene(GameScene.getScene());
-                    gameScene.setStage(stage);
-                }
+            Platform.runLater(() -> {
+                // Redirect window to game scene
+                stage.setScene(GameScene.getScene());
+                gameScene.setStage(stage);
             });
         }).start();
 
