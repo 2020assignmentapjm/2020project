@@ -7,6 +7,8 @@ import server.Client;
 import server.Server;
 import user.Player;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.Animation;
 import javafx.animation.PathTransition;
 import javafx.animation.RotateTransition;
 import javafx.application.Application;
@@ -48,6 +50,8 @@ public class GameScene {
 	private MenuItem[] playerMI;
 	private MenuItem[] playerAmountCalledMI;
 	private MenuItem[] playerMoneyMI;
+	private Text name;
+	private Text money;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -89,6 +93,8 @@ public class GameScene {
 		this.server = server;
 
 		initializePlayersServer(this.server);
+		name.setText(String.valueOf(players[clientNum-1].getPlayerName()));
+		money.setText("$ "+String.valueOf(players[clientNum-1].getCurrentMoney()));
 
 		new Thread(() -> runGame()).start();
 	}
@@ -104,8 +110,11 @@ public class GameScene {
 		this.client = client;
 
 		initializePlayersClient(this.client);
+		name.setText(String.valueOf(players[clientNum].getPlayerName()));
+		money.setText("$ "+String.valueOf(players[clientNum].getCurrentMoney()));
 		
 		new Thread(() -> runGame()).start();
+		
 	}
 
 	// -----------------------------------------
@@ -135,52 +144,87 @@ public class GameScene {
 	public void runGame(){
 
 		roundNum = 0;
-
+		
 		gameEnded = false;
 		roundEnded = false;
 
 		while (!gameEnded) { // For every round
 
 			while (!roundEnded) { // Within 1 round
-				System.out.print(currentPlayer);
+				System.out.println("Current Player: " + currentPlayer);
 				if (!players[currentPlayer].hasFolded()) {
 
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
-
+					System.out.println("Amount called: " + amountToCall);
 					System.out.println("Set active in progress");
 					setActive(currentPlayer); // decision is called by UI
 					System.out.println("Set active successfull");
 
 				}
-					System.out.println("DOESNT LOOP!");
 					players[currentPlayer].setCurrent(false);
 					currentPlayer = (currentPlayer + 1) % playerNum;
-					System.out.print("Needs set new player!!");
 					players[currentPlayer].setCurrent(true);
 					roundEnded = isRoundEnd();
-					System.out.print("Needs to loop!!");
+					
 				}
 
-			// End of Round
-			// Check who won
-			assignPot(); // Assigns pot to a player
-			checkEliminated(); // Check if someone was eliminated
-
 			// TODO: reset
+			flipCardByRound();
+			roundNum++;
+				System.out.println("Round num incremented");
+			if (roundNum == 4){
+				roundNum = 0;
+				assignPot(); // Assigns pot to a player
+				System.out.println("pot assisgned");
+				roundNum++;
+				checkEliminated(); // Check if someone was eliminated
+				System.out.println("Checked elimed players");
+				initializeScene();
+			}
+			System.out.println("Round Number: " + roundNum);
 
 			setPlayerBlinds(startingPos, false);
+			System.out.println("Blinds set");
 
 			startingPos = (startingPos + 1) % playerNum;
 
 			setPlayerBlinds(startingPos, true);
-
-			roundNum++;
+			System.out.println("Blinds asisgned");
 
 			if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
 				raiseBlinds();
 			}
+			System.out.println("Blinds recalc");
+			roundEnded = false;
 		}
 	}
+	
+	private void flipCardByRound(){
+        if(roundNum == 0)
+        {
+            for(int i = 0; i < 3; i++)
+            {
+                dealerCardImages[i].setImage(dealerCards[i].getCardImage().getImage());
+            }
+        }
+        if(roundNum == 1)
+        {
+                dealerCardImages[3].setImage(dealerCards[3].getCardImage().getImage());
+        }
+        if(roundNum == 2)
+        {
+            dealerCardImages[4].setImage(dealerCards[4].getCardImage().getImage());
+        }
+        if(roundNum == 3)
+        {
+            for (int i = 0; i < playerNum; i++) {
+                for(int j = 0; j < 2; j++)
+                {
+                    playerCardImages[i][j].setImage(players[i].getCards()[j].getCardImage().getImage());
+                }
+            }
+        }
+    }
 
 	private void initializePlayersServer(Server server) {
 
@@ -261,31 +305,32 @@ public class GameScene {
 
 		currentPlayer = startingPos;
 		players[currentPlayer].setCurrent(true);
-
 		adjustScene();
 	}
 	
 	private boolean isRoundEnd(){
 		  int playersFolded = 0;
-		//  boolean sameCall = true;
+		  boolean sameCall = true;
+		  int count = 0;
 		  for (Player player :players) {
 		    if (player.hasFolded()) {
 		      playersFolded++;
 		    }
 		  }
-	/*	  for (int i = 1; i < playerNum; i++){
-			  if (players[i].getAmountCalled() != players[i-1].getAmountCalled()) {
-				  sameCall = false;
-			  }
-		  }*/
 		  if (playersFolded == playerNum-1) {
-		    return true;
+			    return true;
 		  }
-		/*  if (sameCall = true) {
+		  for (int i = 0; i < playerNum-1; i++) {
+			  if (players[i].getAmountCalled() == players[i+1].getAmountCalled()) {
+				 count++;
+			  }
+		  }
+		  if (count == playerNum-1) {
 			  return true;
-		  }*/
-		  return false;
+		  }
+		 return false;
 		}
+	
 
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
@@ -387,13 +432,12 @@ public class GameScene {
 		for (Player player : players) {
 			if (!player.hasFolded()) {
 				handVals.add(new Hand(getDealerCards(), player.getCards()).getHandValue());
-				System.out.println(player.getCards());
 			}
 		}
-		System.out.println(getDealerCards());
 		double winningHand = Collections.max(handVals);
 		int winnerIndex = handVals.indexOf(winningHand);
 		players[winnerIndex].editCurrentMoney(pot);
+		System.out.println("The Winner is: " + winnerIndex);
 	}
 
 	private void increasePot(int wager) {
@@ -417,9 +461,9 @@ public class GameScene {
 	}
 
 	private void setActive(int current) {
-
-		if (current == ownPlayer.getPlayerPosition()) {
-			System.out.print("server active");
+		FadeTransition ft = highlightCards(current);
+		if (current == ownPlayer.getPlayerPosition()){
+			System.out.println("server active");
 			activateActions();
 			actionMade = false;
 
@@ -435,12 +479,19 @@ public class GameScene {
 		}
 		else{
 			// TODO: highlightCards(current);
-			System.out.println("Client active");
 			String msg;
 
 			if (ownPlayer.getPlayerPosition() == 0){	// Server
 				System.out.println("Server reading from client");
 				msg = server.readMsg(current-1);
+				String[] msgArr = msg.split(",");
+				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
+				players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
+
+				playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
+				players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+
+				pot = Integer.valueOf(msgArr[1]);
 
 				for (int i = 1; i< playerNum; i++){
 					if (i != current){
@@ -455,7 +506,6 @@ public class GameScene {
 			if (ownPlayer.getPlayerPosition() != 0) {
 				System.out.println("Client must read msg, this is user: "+  ownPlayer.getPlayerPosition());
 				String[] msgArr = msg.split(",");
-
 				if (Integer.valueOf(msgArr[0]) == 0){
 					playerCardImages[currentPlayer][0].setOpacity(0);
 					playerCardImages[currentPlayer][1].setOpacity(0);
@@ -471,14 +521,25 @@ public class GameScene {
 					pot = Integer.valueOf(msgArr[1]);
 				}
 			}
-
 			// TODO: Unhighlight
 		}
+		unhighlightCards(current, ft);
 	}
 
-	private void highlightCards(){
+	private FadeTransition highlightCards(int current){
+        playerFrames[current].setStroke(Color.RED);
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), playerFrames[current]);
+        fadeTransition.setFromValue(1.0);
+        fadeTransition.setToValue(0.0);
+        fadeTransition.setCycleCount(Animation.INDEFINITE);
+        fadeTransition.play();
+        return fadeTransition;
+    }
 
-	}
+    private void unhighlightCards(int current, FadeTransition fd){
+        playerFrames[current].setStroke(Color.WHITE);
+        fd.stop();
+    }
 
 	private void activateActions(){
 		fold.setDisable(false);
@@ -560,6 +621,7 @@ public class GameScene {
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
 		
 		// Creating scene with pane
+
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 	}
 
@@ -570,11 +632,11 @@ public class GameScene {
 		vb.setPrefWidth(200);
 
 		// Text boxes for the control panel
-		Text name = new Text("--Placeholder--");
+		name = new Text("--Placeholder--");
 		name.setFill(Color.WHITE);
 		name.setStyle("-fx-font-size:14");
 
-		Text money = new Text("$~~~PLACEHOLDER~~~");
+		money = new Text("$~~~PLACEHOLDER~~~");
 		money.setFill(Color.WHITE);
 		money.setStyle("-fx-font-size:14");
 
