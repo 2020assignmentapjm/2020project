@@ -1,3 +1,7 @@
+/*
+ONLY NEEDS TO RESET AFTER HAND PLAYED
+2PLAYER GAME WORKS FOR SURE
+*/
 package game;
 
 import game.card.Card;
@@ -112,9 +116,9 @@ public class GameScene {
 		initializePlayersClient(this.client);
 		name.setText(String.valueOf(players[clientNum].getPlayerName()));
 		money.setText("$ "+String.valueOf(players[clientNum].getCurrentMoney()));
-		
+
 		new Thread(() -> runGame()).start();
-		
+
 	}
 
 	// -----------------------------------------
@@ -144,7 +148,7 @@ public class GameScene {
 	public void runGame(){
 
 		roundNum = 0;
-		
+
 		gameEnded = false;
 		roundEnded = false;
 
@@ -165,7 +169,7 @@ public class GameScene {
 					currentPlayer = (currentPlayer + 1) % playerNum;
 					players[currentPlayer].setCurrent(true);
 					roundEnded = isRoundEnd();
-					
+
 				}
 
 			// TODO: reset
@@ -198,7 +202,7 @@ public class GameScene {
 			roundEnded = false;
 		}
 	}
-	
+
 	private void flipCardByRound(){
         if(roundNum == 0)
         {
@@ -307,7 +311,7 @@ public class GameScene {
 		players[currentPlayer].setCurrent(true);
 		adjustScene();
 	}
-	
+
 	private boolean isRoundEnd(){
 		  int playersFolded = 0;
 		  boolean sameCall = true;
@@ -330,7 +334,7 @@ public class GameScene {
 		  }
 		 return false;
 		}
-	
+
 
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
@@ -359,10 +363,10 @@ public class GameScene {
 		else {
 			players[currentPlayer].editCurrentMoney((-1) * wager);
 			players[currentPlayer].editAmountCalled(wager);
-	
+
 			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
 			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
-	
+
 			increasePot(wager);
 			sendAction(1, wager);
 			actionMade = true;
@@ -377,10 +381,10 @@ public class GameScene {
 		else {
 			players[currentPlayer].editCurrentMoney((-1) * wager);
 			players[currentPlayer].editAmountCalled(wager);
-	
+
 			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
 			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
-	
+
 			increasePot(wager);
 			sendAction(2, wager);
 			actionMade = true;
@@ -497,7 +501,7 @@ public class GameScene {
 					if (i != current){
 						server.sendMsg(msg, i);
 					}
-				}	
+				}
 				System.out.println("Sent msg to clients");
 			}
 			else{		// Client
@@ -514,10 +518,10 @@ public class GameScene {
 				else{
 					playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
 					players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
-	
+
 					playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
 					players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
-	
+
 					pot = Integer.valueOf(msgArr[1]);
 				}
 			}
@@ -581,7 +585,7 @@ public class GameScene {
 
 			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
 			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
-			
+
 			playerMoneyMI[i] = new MenuItem("$", 20);
 			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
 
@@ -619,7 +623,7 @@ public class GameScene {
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-		
+
 		// Creating scene with pane
 
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
@@ -743,7 +747,7 @@ public class GameScene {
 
 	/**
 	 * Adjusts the betting slider
-	 * 
+	 *
 	 * @param min the minimum amount is the double of the amount to be called
 	 * @param max the maximum amount is the amount of money the player has
 	 */
@@ -760,7 +764,7 @@ public class GameScene {
 
 	/**
      * Sets the stage to a new stage
-     * 
+     *
      * @param primaryStage new stage
      */
     public void setStage(Stage primaryStage) {
@@ -769,7 +773,7 @@ public class GameScene {
 
 	/**
      * Returns the scene that is currently used
-     * 
+     *
      * @return the scene that is currently used
      */
     public static Scene getScene() {
