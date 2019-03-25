@@ -646,6 +646,13 @@ public class GameScene {
 				if (player.getPlayerPosition() == 0){	// Server
 					Platform.runLater(() -> {
 						System.out.println("SERVER HAS LOST");
+
+						try {
+							sendStat();
+						} catch (FileNotFoundException e) {
+							System.err.println("File not found exception");
+						}
+
 						gameEnded = true;
 						stage.setScene(MainMenu.getScene());
 					});
