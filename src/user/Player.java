@@ -81,8 +81,10 @@ public class Player {
 	 */
 	public void setBigBlind(boolean isBigBlind, int bigBlind) {
 		this.isBigBlind = isBigBlind;
-        this.currentMoney -= bigBlind;
-        this.amountCalled = bigBlind;
+		if (isBigBlind){
+			this.currentMoney -= bigBlind;
+			this.amountCalled = bigBlind;
+		}
 	}
 
 	/**
@@ -97,8 +99,10 @@ public class Player {
 	 */
 	public void setSmallBlind(boolean isSmallBlind, int smallBlind) {
 		this.isSmallBlind = isSmallBlind;
-        this.currentMoney -= smallBlind;
-        this.amountCalled = smallBlind;
+		if (isSmallBlind){
+			this.currentMoney -= smallBlind;
+			this.amountCalled = smallBlind;
+		}
 	}
 
 	/**
@@ -125,7 +129,7 @@ public class Player {
 	/**
 	 * @param currentMoney the currentMoney to set
 	 */
-	public void editCurrentMoney(int currentMoney) {
+	public void addMoney(int currentMoney) {
 		this.currentMoney += currentMoney;
 	}
 
