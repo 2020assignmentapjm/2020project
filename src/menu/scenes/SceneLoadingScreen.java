@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Random;
 
 import game.GameScene;
 import javafx.scene.layout.Pane;
@@ -31,7 +32,11 @@ public class SceneLoadingScreen {
         // Main pane
         Pane pane = new Pane();
 
-        Server server = new Server(clientNum, 2000);
+        Random rand = new Random();
+
+        int port = rand.nextInt(5000) + 1024;
+
+        Server server = new Server(clientNum, port);
         server.start();
 
         // Check if all players have connected in thread
@@ -64,9 +69,10 @@ public class SceneLoadingScreen {
         }).start();
 
         // Show server IP address
-        MenuItem itemHost = new MenuItem("HOST: " + server.getHost(), 25);
+        MenuItem itemHost = new MenuItem("HOST: " + server.getHost() + ":" + port, 25);
         
-        itemHost.setLayoutX(320);
+        itemHost.disableBold();
+        itemHost.setLayoutX(310);
         itemHost.setLayoutY(150);
 
         pane.getChildren().add(itemHost);
@@ -80,16 +86,16 @@ public class SceneLoadingScreen {
     }
 
     // Constructor for client
-    public SceneLoadingScreen(String host) {
+    public SceneLoadingScreen(String host, int port) {
 
         // Main pane
         Pane pane = new Pane();
 
-        Client client = new Client(host, 2000);
+        Client client = new Client(host, port);
         client.start();
 
         new Thread(() -> {
- 
+
             GameScene gameScene = new GameScene(client, Integer.valueOf(client.readMsg()));
 
             Platform.runLater(() -> {
