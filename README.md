@@ -1,6 +1,6 @@
 # 2020 Project
 
-[Link to GitHub repository] (https://github.com/2020assignmentapjm/2020project)
+[Link to GitHub repository](https://github.com/2020assignmentapjm/2020project)
 
 ## Poker Game
 
