@@ -15,18 +15,22 @@ import java.io.File;
 
 public class SceneHelp {
 
+    // Variables
     private static Scene scene;
     private static Stage stage;
     private static VBox menuBox;
+
+    // Constants
     private final int SCENE_WIDTH = 900;
     private final int SCENE_HEIGHT = 600;
+    private final int VBOX_SPACING = 10;
+    private final String BACKGROUND_IMG_PATH = "images/Cards/pokertable.jpg";
 
     public SceneHelp() {
         GridPane pane = new GridPane();
         pane.setAlignment(Pos.CENTER);
-        pane.setHgap(5);
-        pane.setVgap(10);
-        final String BACKGROUND_IMG_PATH = "images/Cards/pokertable.jpg";
+        pane.setHgap(VBOX_SPACING/2);
+        pane.setVgap(VBOX_SPACING);
         File imgF = new File(BACKGROUND_IMG_PATH);
         pane.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
 
@@ -142,7 +146,7 @@ public class SceneHelp {
 
         HBox bck = new HBox();
         MenuItem back = new MenuItem("BACK", 30);
-        menuBox = new VBox(10, back);
+        menuBox = new VBox(VBOX_SPACING, back);
         bck.getChildren().add(menuBox);
         GridPane.setConstraints(bck, 0, 10);
 

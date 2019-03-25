@@ -54,36 +54,44 @@ public class SceneClient {
         // Event Handlers
         itemJoin.setOnActivate(() -> {
 
-            String host = tf.getText();
-
-            if (host != "") {
-
-                try {
-                    if (InetAddress.getByName(host).isReachable(TIMEOUT)) { // If host is reachable then connect to host
-                        sceneLoadingScreen = new SceneLoadingScreen(host);
-
-                        stage.setScene(SceneLoadingScreen.getScene());
-                        sceneLoadingScreen.setStage(stage);
-                    }
-                    else{
-                        tf.setStyle("-fx-border-color: red;");
-                        System.err.println("Server is not reachable");
-                    }
-                }
-                catch (UnknownHostException e) {
-
-                    tf.setStyle("-fx-border-color: red;");
-                    System.err.println("Unknown host exception");
-                }
-                catch (IOException e) {
-                    
-                    tf.setStyle("-fx-border-color: red;");
-                    System.err.println("IO exception");
-                }
+            if (!tf.getText().contains(":")){
+                tf.setStyle("-fx-border-color: red;");
+                System.err.println("Server is not reachable");
             }
             else{
-                tf.setStyle("-fx-border-color: red;");
-                System.err.println("No input");
+
+                String host = tf.getText().split(":")[0];
+                int port = Integer.valueOf(tf.getText().split(":")[1]);
+
+                if (host != "") {
+
+                    try {
+                        if (InetAddress.getByName(host).isReachable(TIMEOUT)) { // If host is reachable then connect to host
+                            sceneLoadingScreen = new SceneLoadingScreen(host, port);
+
+                            stage.setScene(SceneLoadingScreen.getScene());
+                            sceneLoadingScreen.setStage(stage);
+                        }
+                        else{
+                            tf.setStyle("-fx-border-color: red;");
+                            System.err.println("Server is not reachable");
+                        }
+                    }
+                    catch (UnknownHostException e) {
+
+                        tf.setStyle("-fx-border-color: red;");
+                        System.err.println("Unknown host exception");
+                    }
+                    catch (IOException e) {
+                        
+                        tf.setStyle("-fx-border-color: red;");
+                        System.err.println("IO exception");
+                    }
+                }
+                else{
+                    tf.setStyle("-fx-border-color: red;");
+                    System.err.println("No input");
+                }
             }
         });
 

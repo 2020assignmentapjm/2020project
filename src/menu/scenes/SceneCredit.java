@@ -33,10 +33,8 @@ public class SceneCredit {
         // Main pane
         Pane pane = new Pane();
 
-
         // Menu items
         MenuItem back = new MenuItem("BACK", 20);
-
 
         // Event Handlers
         back.setOnActivate(() -> stage.setScene(MainMenu.getScene()));
