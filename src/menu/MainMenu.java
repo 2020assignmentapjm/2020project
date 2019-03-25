@@ -59,12 +59,13 @@ public class MainMenu extends Application {
             scenePlay.setStage(primaryStage);
         });
 
-        // Implement them first
-        /*
-         * itemOption.setOnActivate(() -> {
-         * primaryStage.setScene(sceneOption.getScene());
-         * sceneOption.setStage(primaryStage); });
-         */
+        itemOption.setOnActivate(() -> {
+            sceneOption.getStats();
+            sceneOption.updateUI();
+            
+            primaryStage.setScene(SceneOption.getScene());
+            sceneOption.setStage(primaryStage);
+        });
 
         itemHelp.setOnActivate(() -> {
             primaryStage.setScene(SceneHelp.getScene());
