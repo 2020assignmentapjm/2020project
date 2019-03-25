@@ -31,26 +31,36 @@ public class Player {
 
 	public String toString(){
 		return playerName + "," + String.valueOf(currentMoney) + "," + String.valueOf(playerPosition) + "," +
-		String.valueOf(isCurrent) + "," + String.valueOf(isBigBlind) + "," + String.valueOf(isSmallBlind) + "," +
-		String.valueOf(folded) +"," + cards[0].toString() + "," + cards[1].toString();
+				String.valueOf(isCurrent) + "," + String.valueOf(isBigBlind) + "," + String.valueOf(isSmallBlind) + "," +
+				String.valueOf(folded) +"," + cards[0].toString() + "," + cards[1].toString();
 	}
-
+	/**
+	 * @param amount The money the player has called
+	 */
 	public void setAmountCalled(int amount){
 		this.amountCalled = amount;
 	}
-
+	/**
+	 * @param amount the money the player has in game
+	 */
 	public void setMoney(int amount){
 		this.currentMoney = amount;
 	}
-
+	/**
+	 * @return users cards
+	 */
 	public Card[] getCards(){
 		return cards;
 	}
-
+	/**
+	 * @return if the player has folded
+	 */
 	public boolean hasFolded(){
 		return folded;
 	}
-
+	/**
+	 * @param state current boolean status of players fold
+	 */
 	public void setFolded(boolean state){
 		folded = state;
 	}
@@ -132,11 +142,15 @@ public class Player {
 	public void addMoney(int currentMoney) {
 		this.currentMoney += currentMoney;
 	}
-
+	/**
+	 * @param wager the money the player bets
+	 */
 	public void editAmountCalled(int wager){
 		this.amountCalled += wager;
 	}
-
+	/**
+	 * @return the amount the player has called
+	 */
 	public int getAmountCalled(){
 		return amountCalled;
 	}
