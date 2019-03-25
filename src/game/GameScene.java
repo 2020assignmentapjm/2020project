@@ -160,8 +160,9 @@ public class GameScene {
 			int subRound = 0;
 			while (subRound < 4) {
 
+				numPlayersPlayed++;
+				
 				if (!players[currentPlayer].hasFolded()) {
-					numPlayersPlayed++;
 
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
 
@@ -466,8 +467,10 @@ public class GameScene {
 
 	private boolean checkAllCalled() {
 		for (int i = 0; i < playerNum; i++) {
-			if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
-				return false;
+			if (!players[i].hasFolded()){
+				if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
+					return false;
+				}
 			}
 		}
 		return true;
