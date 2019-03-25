@@ -95,6 +95,9 @@ public class Hand {
             }
 
             if (found){
+                if (figure == 14){
+                    return 100 + figure;    // Royal flush
+                }
                 return figure;
             }
         }

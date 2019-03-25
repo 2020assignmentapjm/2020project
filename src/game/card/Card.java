@@ -16,7 +16,6 @@ public class Card {
     private final int SUIT_INDEX = 1;
 
     public Card(String card) {
-        
         this.figureChar = card.charAt(FIGURE_INDEX);
         this.figure = charFigureToNumber(figureChar);
         this.suit = card.charAt(SUIT_INDEX);
