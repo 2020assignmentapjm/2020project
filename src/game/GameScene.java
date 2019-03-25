@@ -1,7 +1,3 @@
-/*
-ONLY NEEDS TO RESET AFTER HAND PLAYED
-2PLAYER GAME WORKS FOR SURE
-*/
 package game;
 
 import game.card.Card;
@@ -10,30 +6,31 @@ import game.card.Hand;
 import server.Client;
 import server.Server;
 import user.Player;
-
-import javafx.animation.FadeTransition;
 import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.animation.PathTransition;
 import javafx.animation.RotateTransition;
-import javafx.application.Application;
-import javafx.beans.binding.Bindings;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.text.Text;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
 
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import menu.MainMenu;
 import menu.MenuItem;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -47,15 +44,15 @@ public class GameScene {
 	private static Scene scene;
 	private static Stage stage;
 	private Button fold, check, bet;
-	private ImageView foldImg, checkImg, callImg, betImg;
+	private ImageView foldImg, checkImg, betImg;
 	private boolean actionMade;
 	private Rectangle[] playerFrames;
 	private Rectangle dealerFrame;
 	private MenuItem[] playerMI;
 	private MenuItem[] playerAmountCalledMI;
 	private MenuItem[] playerMoneyMI;
-	private Text name;
-	private Text money;
+	private MenuItem potMI;
+	private Pane cardPane;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -70,6 +67,12 @@ public class GameScene {
 	private int playerNum;
 	private Server server;
 	private Client client;
+	private boolean roundLoop;
+	private int stat_fold;
+	private int stat_check;
+	private int stat_call;
+	private int stat_bet;
+	private int[] stat_hands;
 
 	private Deck deck;
 	private Card[] dealerCards;
@@ -90,6 +93,8 @@ public class GameScene {
 
 		System.out.println("Server In Game Scene");
 
+		statsInit();
+
 		this.playerNum = clientNum + 1; // Including the server
 
 		initializeScene();
@@ -97,8 +102,6 @@ public class GameScene {
 		this.server = server;
 
 		initializePlayersServer(this.server);
-		name.setText(String.valueOf(players[clientNum-1].getPlayerName()));
-		money.setText("$ "+String.valueOf(players[clientNum-1].getCurrentMoney()));
 
 		new Thread(() -> runGame()).start();
 	}
@@ -107,6 +110,8 @@ public class GameScene {
 
 		System.out.println("Client In Game Scene");
 
+		statsInit();
+
 		this.playerNum = clientNum + 1; // Including the server
 
 		initializeScene();
@@ -114,11 +119,8 @@ public class GameScene {
 		this.client = client;
 
 		initializePlayersClient(this.client);
-		name.setText(String.valueOf(players[clientNum].getPlayerName()));
-		money.setText("$ "+String.valueOf(players[clientNum].getCurrentMoney()));
 
 		new Thread(() -> runGame()).start();
-
 	}
 
 	// -----------------------------------------
@@ -145,7 +147,7 @@ public class GameScene {
 		return playerNum;
 	}
 
-	public void runGame(){
+	public void runGame() {
 
 		roundNum = 0;
 
@@ -154,96 +156,193 @@ public class GameScene {
 
 		while (!gameEnded) { // For every round
 
-			while (!roundEnded) { // Within 1 round
-				System.out.println("Current Player: " + currentPlayer);
+			int numPlayersPlayed = 0;
+			int subRound = 0;
+			while (subRound < 4) {
+
 				if (!players[currentPlayer].hasFolded()) {
+					numPlayersPlayed++;
 
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
-					System.out.println("Amount called: " + amountToCall);
-					System.out.println("Set active in progress");
-					setActive(currentPlayer); // decision is called by UI
-					System.out.println("Set active successfull");
 
+					if (amountToCall != 0) {
+						checkImg.setImage(new Image(new File("images/callButton.png").toURI().toString()));
+						adjustSlider(getMaxAmToCall() * 2, players[currentPlayer].getCurrentMoney());
+					} else {
+						checkImg.setImage(new Image(new File("images/checkButton.png").toURI().toString()));
+						adjustSlider(bigBlind, players[currentPlayer].getCurrentMoney());
+					}
+
+					setActive(); // decision is called by UI
+
+					// Check if playerNum - 1 people folded
+					if (checkFolded()) {
+						pushCallsToPot();
+						break;
+					}
 				}
-					players[currentPlayer].setCurrent(false);
-					currentPlayer = (currentPlayer + 1) % playerNum;
-					players[currentPlayer].setCurrent(true);
-					roundEnded = isRoundEnd();
 
+				players[currentPlayer].setCurrent(false);
+
+				currentPlayer++;
+
+				if (currentPlayer == playerNum) {
+					currentPlayer = 0;
+
+					roundLoop = true;
 				}
 
-			// TODO: reset
-			flipCardByRound();
-			roundNum++;
-				System.out.println("Round num incremented");
-			if (roundNum == 4){
-				roundNum = 0;
-				assignPot(); // Assigns pot to a player
-				System.out.println("pot assisgned");
-				roundNum++;
-				checkEliminated(); // Check if someone was eliminated
-				System.out.println("Checked elimed players");
-				initializeScene();
+				if (roundLoop) {
+					if (checkAllCalled() && numPlayersPlayed >= playerNum) { // Next subround
+
+						pushCallsToPot();
+
+						subRound++;
+
+						numPlayersPlayed = 0;
+
+						if (subRound == 1) {
+							showFlop();
+						} else if (subRound == 2) {
+							showRiver();
+						} else if (subRound == 3) {
+							showTurn();
+						}
+
+						for (int i = 0; i < playerNum; i++) {
+							players[i].setAmountCalled(0);
+						}
+
+						roundLoop = false;
+					}
+				}
+
+				players[currentPlayer].setCurrent(true);
 			}
-			System.out.println("Round Number: " + roundNum);
+
+			// End of Round
+			// Check who won
+			assignPot(); // Assigns pot to a player
+			checkEliminated(); // Check if someone was eliminated
+
+			// Game Ends
+			if (playerNum == 1) {
+				Platform.runLater(() -> {
+					System.out.println("YOU WON");
+					
+					try {
+						sendStat();
+					} catch (FileNotFoundException e) {
+						System.err.println("File not found exception");
+					}
+
+					gameEnded = true;
+					stage.setScene(MainMenu.getScene());
+				});
+			}
 
 			setPlayerBlinds(startingPos, false);
-			System.out.println("Blinds set");
 
 			startingPos = (startingPos + 1) % playerNum;
 
-			setPlayerBlinds(startingPos, true);
-			System.out.println("Blinds asisgned");
+			if (ownPlayer.getPlayerPosition() == 0) { // Server
+				resetScene();
+				resetServer();
+			} else { // Client
+				resetScene();
+				resetClient();
+			}
+
+			roundNum++;
 
 			if (roundNum % BLIND_RAISE_ROUND_NUM == BLIND_RAISE_ROUND_NUM - 1) {
 				raiseBlinds();
 			}
-			System.out.println("Blinds recalc");
-			roundEnded = false;
 		}
 	}
 
-	private void flipCardByRound(){
-        if(roundNum == 0)
-        {
-            for(int i = 0; i < 3; i++)
-            {
-                dealerCardImages[i].setImage(dealerCards[i].getCardImage().getImage());
-            }
-        }
-        if(roundNum == 1)
-        {
-                dealerCardImages[3].setImage(dealerCards[3].getCardImage().getImage());
-        }
-        if(roundNum == 2)
-        {
-            dealerCardImages[4].setImage(dealerCards[4].getCardImage().getImage());
-        }
-        if(roundNum == 3)
-        {
-            for (int i = 0; i < playerNum; i++) {
-                for(int j = 0; j < 2; j++)
-                {
-                    playerCardImages[i][j].setImage(players[i].getCards()[j].getCardImage().getImage());
-                }
-            }
-        }
-    }
+	private void resetServer() {
+		deck = new Deck();
+
+		dealerCards = deck.dealCards(5);
+		String dealerCardsString = "";
+		for (int i = 0; i < 5; i++) {
+			if (i > 0) {
+				dealerCardsString += ",";
+			}
+			dealerCardsString += dealerCards[i];
+		}
+
+		for (int i = 0; i < playerNum; i++) {
+			players[i] = new Player("Player " + Integer.toString(i + 1), players[i].getCurrentMoney(), i, false, false,
+					false, false, deck.dealCards(2));
+		}
+
+		// players[0]: server player
+		ownPlayer = players[0];
+
+		currentPlayer = startingPos;
+		players[currentPlayer].setCurrent(true);
+
+		setPlayerBlinds(startingPos, true);
+
+		// Send cards to clients
+		String playersText = "";
+		for (int i = 0; i < playerNum; i++) {
+			playersText += players[i].getCards()[0] + "," + players[i].getCards()[1] + ";";
+		}
+		playersText += dealerCardsString;
+
+		for (int i = 0; i < playerNum - 1; i++) {
+			server.sendMsg(playersText, i);
+		}
+
+		adjustScene();
+	}
+
+	private void resetClient() {
+		// Read players info
+		String[] cardsInfo = client.readMsg().split(";");
+
+		for (int i = 0; i < playerNum; i++) {
+			Card[] playerCards = new Card[2];
+			playerCards[0] = new Card(cardsInfo[i].split(",")[0]);
+			playerCards[1] = new Card(cardsInfo[i].split(",")[1]);
+
+			players[i] = new Player("Player " + Integer.toString(i + 1), players[i].getCurrentMoney(), i, false, false,
+					false, false, playerCards);
+		}
+
+		// Dealer Cards
+		dealerCards = new Card[5];
+		for (int i = 0; i < 5; i++) {
+			dealerCards[i] = new Card(cardsInfo[playerNum].split(",")[i]);
+		}
+
+		ownPlayer = players[client.getPosition() + 1]; // Including server
+
+		currentPlayer = startingPos;
+		players[currentPlayer].setCurrent(true);
+
+		setPlayerBlinds(startingPos, true);
+
+		adjustScene();
+	}
 
 	private void initializePlayersServer(Server server) {
 
 		players = new Player[playerNum];
 
-		startingPos = INITIAL_POSITION;
-		smallBlind = INITIAL_SMALL_BLIND;
-		bigBlind = INITIAL_BIG_BLIND;
+		this.startingPos = INITIAL_POSITION;
+		this.smallBlind = INITIAL_SMALL_BLIND;
+		this.bigBlind = INITIAL_BIG_BLIND;
 
 		deck = new Deck();
 
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
-			if (i > 0){
+			if (i > 0) {
 				dealerCardsString += ",";
 			}
 			dealerCardsString += dealerCards[i];
@@ -257,11 +356,13 @@ public class GameScene {
 		// players[0]: server player
 		ownPlayer = players[0];
 
+		playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
+		playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
+
 		setPlayerBlinds(startingPos, true);
 
 		currentPlayer = startingPos;
 		players[currentPlayer].setCurrent(true);
-
 
 		// Send cards to clients
 		String playersText = "";
@@ -270,7 +371,7 @@ public class GameScene {
 		}
 		playersText += dealerCardsString;
 
-		for (int i = 0; i < playerNum-1; i++) {
+		for (int i = 0; i < playerNum - 1; i++) {
 			server.sendMsg(playersText, i);
 		}
 
@@ -279,14 +380,15 @@ public class GameScene {
 
 	private void initializePlayersClient(Client client) {
 
-		startingPos = INITIAL_POSITION;
-		smallBlind = INITIAL_SMALL_BLIND;
-		bigBlind = INITIAL_BIG_BLIND;
-
 		players = new Player[playerNum];
 
+		this.startingPos = INITIAL_POSITION;
+		this.smallBlind = INITIAL_SMALL_BLIND;
+		this.bigBlind = INITIAL_BIG_BLIND;
+
 		// Read players info
-		String[] cardsInfo = client.readMsg().split(";");
+		String msg = client.readMsg();
+		String[] cardsInfo = msg.split(";");
 
 		for (int i = 0; i < playerNum; i++) {
 			Card[] playerCards = new Card[2];
@@ -294,47 +396,82 @@ public class GameScene {
 			playerCards[1] = new Card(cardsInfo[i].split(",")[1]);
 
 			players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
-						playerCards);
+					playerCards);
 		}
 
 		// Dealer Cards
 		dealerCards = new Card[5];
 		for (int i = 0; i < 5; i++) {
-			dealerCards[i] = new Card(cardsInfo[playerNum].split(",")[i]);
+			dealerCards[i] = new Card(cardsInfo[cardsInfo.length - 1].split(",")[i]);
 		}
 
-		ownPlayer = players[client.getPosition() + 1];	// Including server
+		ownPlayer = players[client.getPosition() + 1]; // Including server
+
+		playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
+		playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
 
 		setPlayerBlinds(startingPos, true);
 
 		currentPlayer = startingPos;
 		players[currentPlayer].setCurrent(true);
+
 		adjustScene();
 	}
 
-	private boolean isRoundEnd(){
-		  int playersFolded = 0;
-		  boolean sameCall = true;
-		  int count = 0;
-		  for (Player player :players) {
-		    if (player.hasFolded()) {
-		      playersFolded++;
-		    }
-		  }
-		  if (playersFolded == playerNum-1) {
-			    return true;
-		  }
-		  for (int i = 0; i < playerNum-1; i++) {
-			  if (players[i].getAmountCalled() == players[i+1].getAmountCalled()) {
-				 count++;
-			  }
-		  }
-		  if (count == playerNum-1) {
-			  return true;
-		  }
-		 return false;
+	private boolean checkFolded() {
+		int num = 0;
+		for (int i = 0; i < playerNum; i++) {
+			if (players[i].hasFolded()) {
+				num++;
+			}
 		}
 
+		return num == playerNum - 1;
+	}
+
+	private void statsInit() {
+		stat_fold = 0;
+		stat_check = 0;
+		stat_call = 0;
+		stat_bet = 0;
+		stat_hands = new int[10];
+		for (int i = 0; i < 10; i++) {
+			stat_hands[i] = 0;
+		}
+	}
+
+	private void pushCallsToPot() {
+		for (int i = 0; i < playerNum; i++) {
+			pot += players[i].getAmountCalled();
+			playerAmountCalledMI[i].setText("");
+			playerAmountCalledMI[i].setMinWidth(100);
+		}
+		potMI.setText("$ " + pot);
+		potMI.setMinWidth(100);
+	}
+
+	private void showFlop() {
+		for (int i = 0; i < 3; i++) {
+			dealerCardImages[i].setImage(dealerCards[i].getCardImage().getImage());
+		}
+	}
+
+	private void showRiver() {
+		dealerCardImages[3].setImage(dealerCards[3].getCardImage().getImage());
+	}
+
+	private void showTurn() {
+		dealerCardImages[4].setImage(dealerCards[4].getCardImage().getImage());
+	}
+
+	private boolean checkAllCalled() {
+		for (int i = 0; i < playerNum; i++) {
+			if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
@@ -353,48 +490,61 @@ public class GameScene {
 		playerCardImages[currentPlayer][1].setOpacity(0);
 		sendAction(0, 0);
 		actionMade = true;
+
+		// Stats
+		if (ownPlayer == players[currentPlayer]) {
+			addStat("fold");
+		}
 	}
 
 	// execute when call button is clicked
 	private void call(int wager) {
 		if (players[currentPlayer].getCurrentMoney() < wager) {
-			System.out.println("OverBET");
+			wager = players[currentPlayer].getCurrentMoney();
 		}
-		else {
-			players[currentPlayer].editCurrentMoney((-1) * wager);
-			players[currentPlayer].editAmountCalled(wager);
 
-			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
-			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+		players[currentPlayer].addMoney((-1) * wager);
+		players[currentPlayer].editAmountCalled(wager);
 
-			increasePot(wager);
-			sendAction(1, wager);
-			actionMade = true;
+		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+		playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+
+		playerMoneyMI[currentPlayer].setMinWidth(100);
+		playerAmountCalledMI[currentPlayer].setMinWidth(100);
+
+		sendAction(1, wager);
+		actionMade = true;
+
+		// Stats
+		if (ownPlayer == players[currentPlayer]) {
+			addStat("call" + String.valueOf(wager));
 		}
 	}
 
 	// execute when bet button is clicked
 	private void bet(int wager) {
-		if (players[currentPlayer].getCurrentMoney() < wager) {
-			System.out.println("OverBET");
-		}
-		else {
-			players[currentPlayer].editCurrentMoney((-1) * wager);
-			players[currentPlayer].editAmountCalled(wager);
+		players[currentPlayer].addMoney((-1) * wager);
+		players[currentPlayer].editAmountCalled(wager);
 
-			playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
-			playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
+		playerMoneyMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getCurrentMoney()));
+		playerAmountCalledMI[currentPlayer].setText("$ " + String.valueOf(players[currentPlayer].getAmountCalled()));
 
-			increasePot(wager);
-			sendAction(2, wager);
-			actionMade = true;
+		playerMoneyMI[currentPlayer].setMinWidth(100);
+		playerAmountCalledMI[currentPlayer].setMinWidth(100);
+
+		sendAction(2, wager);
+		actionMade = true;
+
+		// Stats
+		if (ownPlayer == players[currentPlayer]) {
+			addStat("bet");
 		}
 	}
 
-	private int getMaxAmToCall(){
+	private int getMaxAmToCall() {
 		int max = 0;
-		for (int i=0; i<playerNum; i++){
-			if (players[i].getAmountCalled() > max){
+		for (int i = 0; i < playerNum; i++) {
+			if (players[i].getAmountCalled() > max) {
 				max = players[i].getAmountCalled();
 			}
 		}
@@ -406,7 +556,7 @@ public class GameScene {
 				+ String.valueOf(ownPlayer.getCurrentMoney() + "," + String.valueOf(ownPlayer.getAmountCalled()));
 
 		if (ownPlayer.getPlayerPosition() == 0) { // Server
-			for (int i = 0; i < playerNum-1; i++) {
+			for (int i = 0; i < playerNum - 1; i++) {
 				server.sendMsg(msg, i);
 			}
 		} else {
@@ -414,66 +564,213 @@ public class GameScene {
 		}
 	}
 
+	private void sendStat() throws FileNotFoundException {
+
+		// Create a File instance
+		File file = new File("stats/PlayerStats.dat");
+
+		int[] tmpStats = new int[14]; // 10 hands + fold, check, call and bet stats
+		for (int i=0; i<14; i++){
+			tmpStats[i] = 0;
+		}
+
+		if (file.exists()){
+
+			// Create a Scanner for the file
+			Scanner input = new Scanner(file);
+		
+			// Read data from a file
+			String stat = "";
+			if (input.hasNext()){
+				stat = input.nextLine();
+			}
+
+			for (int i=0; i<14; i++){
+				tmpStats[i] = Integer.valueOf(stat.split(",")[i]);
+			}
+	 
+			// Close the file
+			input.close();
+		}
+
+		// Update
+		tmpStats[0] += stat_fold;
+		tmpStats[1] += stat_check;
+		tmpStats[2] += stat_call;
+		tmpStats[3] += stat_bet;
+
+		for(int i=0; i<10; i++){
+			tmpStats[i+4] += stat_hands[i];
+		}
+		
+
+		PrintWriter output = new PrintWriter(file);
+
+		for (int i=0; i<14; i++){
+			if (i != 0){
+				output.print(",");
+			}
+			output.print(tmpStats[i]);
+		}
+
+		// Close the file
+		output.close();
+	}
+
+	private void addStat(String stat){
+		if (stat.equals("fold")){
+			stat_fold++;
+		}
+		else if (stat.contains("call")){
+			if (stat.charAt(4) == '0'){
+				stat_check++;
+			}
+			else{
+				stat_call++;
+			}
+		}
+		else if (stat.equals("bet")){
+			stat_bet++;
+		}
+		else{
+			stat_hands[(int) (Double.valueOf(stat) / 100)]++;
+		}
+	}
+
 	private void checkEliminated() {
 		for (Player player : players) {
 			if (player.getCurrentMoney() == 0) {
-				removePlayer(player.getPlayerPosition());
+				if (player.getPlayerPosition() == 0){	// Server
+					Platform.runLater(() -> {
+						System.out.println("SERVER HAS LOST");
+						gameEnded = true;
+						stage.setScene(MainMenu.getScene());
+					});
+				}
+
+				if (player == ownPlayer){
+					Platform.runLater(() -> {
+						System.out.println("YOU LOST");
+
+						try {
+							sendStat();
+						} catch (FileNotFoundException e) {
+							System.err.println("File not found exception");
+						}
+
+						gameEnded = true;
+						stage.setScene(MainMenu.getScene());
+					});
+				}
+				else{
+					removePlayer(player.getPlayerPosition());
+				}
 			}
 		}
 	}
 
 	private void removePlayer(int index) {
-		Player playersTemp[] = new Player[this.playerNum];
-		for (Player player : players) {
-			if (player.getPlayerPosition() != index) {
-				playersTemp[player.getPlayerPosition()] = player;
+		Player playersTemp[] = new Player[--playerNum];
+
+		for (int i=0; i<playerNum; i++) {
+			if (players[i].getPlayerPosition() != index) {
+				playersTemp[i] = players[i];
 			}
 		}
+
+		players = playersTemp;
 	}
 
 	private void assignPot() {
-		ArrayList<Double> handVals = new ArrayList<Double>();
-		for (Player player : players) {
-			if (!player.hasFolded()) {
-				handVals.add(new Hand(getDealerCards(), player.getCards()).getHandValue());
+		double max = 0;
+		int maxI = 0;
+
+		for (int i=0; i<playerNum; i++) {
+			if (!players[i].hasFolded()) {
+
+				Hand hand = new Hand(dealerCards, players[i].getCards());
+				
+				// Stats
+				if (ownPlayer == players[i]){
+					addStat(String.valueOf(hand.getHandValue()));
+				}
+
+				if (hand.getHandValue() > max){
+					max = hand.getHandValue();
+					maxI = i;
+				}
 			}
 		}
-		double winningHand = Collections.max(handVals);
-		int winnerIndex = handVals.indexOf(winningHand);
-		players[winnerIndex].editCurrentMoney(pot);
-		System.out.println("The Winner is: " + winnerIndex);
-	}
 
-	private void increasePot(int wager) {
-		pot += wager;
+		players[maxI].addMoney(pot);
+
+		pot = 0;
+		potMI.setText("$");
+		playerMoneyMI[maxI].setText("$ " + players[maxI].getCurrentMoney());
+
+		potMI.setMinWidth(100);
+		playerMoneyMI[maxI].setMinWidth(100);
 	}
 
 	// -----------------------------------------
 	// SCENE METHODS
 	// -----------------------------------------
 
+
+	private void resetScene(){
+		// Initialize delay duration
+		double delayDuration = 0;
+
+		Platform.runLater(() -> {
+			for (int i=0; i<5; i++){
+				dealerCardImages[i].setImage(null);;
+			}
+			for (int i=0; i<playerNum; i++){
+				playerCardImages[i][0].setImage(null);
+				playerCardImages[i][1].setImage(null);
+			}
+
+			setDealerCards(cardPane, delayDuration);
+			setPlayerCards(cardPane, delayDuration);
+
+			playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
+			playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
+		});
+	}
+
 	private void adjustScene(){
 		for (int i=0; i<playerNum; i++){
 			if (players[i].getAmountCalled() == 0){
 				playerAmountCalledMI[i].setText("");
+				playerAmountCalledMI[i].setMinWidth(100);
 			}
 			else{
 				playerAmountCalledMI[i].setText("$ " + String.valueOf(players[i].getAmountCalled()));
+				playerAmountCalledMI[i].setMinWidth(100);
 			}
 			playerMoneyMI[i].setText("$ " + String.valueOf(players[i].getCurrentMoney()));
+			playerMoneyMI[i].setMinWidth(100);
 		}
 	}
 
-	private void setActive(int current) {
-		FadeTransition ft = highlightCards(current);
-		if (current == ownPlayer.getPlayerPosition()){
-			System.out.println("server active");
+	private void setActive() {
+
+		playerFrames[currentPlayer].setStroke(Color.RED);
+		playerFrames[currentPlayer].setStrokeWidth(5);
+		FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), playerFrames[currentPlayer]);
+		fadeTransition.setFromValue(1.0);
+		fadeTransition.setToValue(0.5);
+		fadeTransition.setAutoReverse(true);
+		fadeTransition.setCycleCount(Animation.INDEFINITE);
+		fadeTransition.play();
+
+		if (currentPlayer == ownPlayer.getPlayerPosition()) {
 			activateActions();
 			actionMade = false;
 
 			while (!actionMade) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -482,68 +779,47 @@ public class GameScene {
 			disableActions();
 		}
 		else{
-			// TODO: highlightCards(current);
+
 			String msg;
 
 			if (ownPlayer.getPlayerPosition() == 0){	// Server
-				System.out.println("Server reading from client");
-				msg = server.readMsg(current-1);
-				String[] msgArr = msg.split(",");
-				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
-				players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
 
-				playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
-				players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+				msg = server.readMsg(currentPlayer - 1);
 
-				pot = Integer.valueOf(msgArr[1]);
-
-				for (int i = 1; i< playerNum; i++){
-					if (i != current){
+				for (int i = 0; i<playerNum-1; i++){
+					if (i != currentPlayer - 1){
 						server.sendMsg(msg, i);
 					}
-				}
-				System.out.println("Sent msg to clients");
+				}	
 			}
 			else{		// Client
 				msg = client.readMsg();
 			}
-			if (ownPlayer.getPlayerPosition() != 0) {
-				System.out.println("Client must read msg, this is user: "+  ownPlayer.getPlayerPosition());
-				String[] msgArr = msg.split(",");
-				if (Integer.valueOf(msgArr[0]) == 0){
-					playerCardImages[currentPlayer][0].setOpacity(0);
-					playerCardImages[currentPlayer][1].setOpacity(0);
-					players[current].hasFolded();
-				}
-				else{
-					playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
-					players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
 
-					playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
-					players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+			String[] msgArr = msg.split(",");
 
-					pot = Integer.valueOf(msgArr[1]);
-				}
+			if (Integer.valueOf(msgArr[0]) == 0){	// Fold
+				playerCardImages[currentPlayer][0].setOpacity(0);
+				playerCardImages[currentPlayer][1].setOpacity(0);
+				players[currentPlayer].setFolded(true);
 			}
-			// TODO: Unhighlight
+			else{	// Call or Bet
+				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
+				players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
+				playerMoneyMI[currentPlayer].setMinWidth(100);
+
+				playerAmountCalledMI[currentPlayer].setText("$ " + msgArr[3]);
+				players[currentPlayer].setAmountCalled(Integer.valueOf(msgArr[3]));
+				playerAmountCalledMI[currentPlayer].setMinWidth(100);
+
+				pot = Integer.valueOf(msgArr[1]);
+			}
 		}
-		unhighlightCards(current, ft);
+
+		playerFrames[currentPlayer].setStroke(Color.WHITE);
+		playerFrames[currentPlayer].setStrokeWidth(1);
+        fadeTransition.stop();
 	}
-
-	private FadeTransition highlightCards(int current){
-        playerFrames[current].setStroke(Color.RED);
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), playerFrames[current]);
-        fadeTransition.setFromValue(1.0);
-        fadeTransition.setToValue(0.0);
-        fadeTransition.setCycleCount(Animation.INDEFINITE);
-        fadeTransition.play();
-        return fadeTransition;
-    }
-
-    private void unhighlightCards(int current, FadeTransition fd){
-        playerFrames[current].setStroke(Color.WHITE);
-        fd.stop();
-    }
 
 	private void activateActions(){
 		fold.setDisable(false);
@@ -566,7 +842,7 @@ public class GameScene {
 		disableActions();
 
 		// Main game pane
-		Pane cardPane = new Pane();
+		cardPane = new Pane();
 
 
 		// Player frames
@@ -578,6 +854,7 @@ public class GameScene {
 		for (int i=0; i<playerNum; i++){
 			playerFrames[i] = new Rectangle(45 + (210 * i), 500, 150, 100);
 			playerFrames[i].setStroke(Color.WHITE);
+			playerFrames[i].setStrokeWidth(1);
 
 			VBox playerBox = new VBox();
 
@@ -585,7 +862,7 @@ public class GameScene {
 
 			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
 			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
-
+			
 			playerMoneyMI[i] = new MenuItem("$", 20);
 			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
 
@@ -596,12 +873,20 @@ public class GameScene {
 		}
 
 		// Dealer frame
+		VBox dealerBox = new VBox();
+
 		dealerFrame = new Rectangle(260, 250, 360, 100);
 		dealerFrame.setStroke(Color.WHITE);
 
-		cardPane.getChildren().addAll(playerFrames);
-		cardPane.getChildren().addAll(dealerFrame);
+		potMI = new MenuItem("$", 20);
 
+		dealerBox.getChildren().addAll(dealerFrame, potMI);
+		dealerBox.setLayoutX(260);
+		dealerBox.setLayoutY(250);
+		dealerBox.setSpacing(10);
+
+		cardPane.getChildren().add(dealerBox);
+		cardPane.getChildren().addAll(playerFrames);
 
 
 		// Set the center deck which is always upside down
@@ -623,40 +908,38 @@ public class GameScene {
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-
+		
 		// Creating scene with pane
-
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 	}
 
 	private void createActionControl(BorderPane root){
 		VBox vb = new VBox();
 		vb.setSpacing(20);
+		vb.setAlignment(Pos.CENTER);
 		root.setRight(vb);
 		vb.setPrefWidth(200);
-
-		// Text boxes for the control panel
-		name = new Text("--Placeholder--");
-		name.setFill(Color.WHITE);
-		name.setStyle("-fx-font-size:14");
-
-		money = new Text("$~~~PLACEHOLDER~~~");
-		money.setFill(Color.WHITE);
-		money.setStyle("-fx-font-size:14");
+		vb.setStyle("-fx-padding: 0 10 0 0");
 
 		// Slider for betting in the control panel
 		betSlider = new Slider(0, INITIAL_MONEY, 0);	// Current is minimum
-		Label label = new Label();
-		label.textProperty().bind(Bindings.format("$ %.0f", betSlider.valueProperty()));
-		label.setStyle("-fx-text-fill:white");
+		MenuItem sliderTxt = new MenuItem("$ ", 20);
+		sliderTxt.setStyle("-fx-text-fill:white");
 		betSlider.setMajorTickUnit(INITIAL_MONEY / 4);
 		betSlider.setShowTickMarks(true);
 		betSlider.setShowTickLabels(true);
 
+		betSlider.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				sliderTxt.setText(String.format("$ %.0f", newValue));
+				sliderTxt.setMinWidth(100);
+			}
+        });
+
 		// Action button images
 		foldImg = new ImageView(new File("images/foldButton.png").toURI().toString());
 		checkImg = new ImageView(new File("images/checkButton.png").toURI().toString());
-		checkImg = new ImageView(new File("images/callButton.png").toURI().toString());
 		betImg = new ImageView(new File("images/betButton.png").toURI().toString());
 
 		// Player actions
@@ -673,10 +956,16 @@ public class GameScene {
 		bet = new Button();
 		bet.setGraphic(betImg);
 		bet.setOnMouseClicked(e -> {
-			bet(Integer.parseInt((label.getText()).substring(2)));
+			if (!sliderTxt.getText().equals("$ NaN")){
+				bet(Integer.parseInt(sliderTxt.getText().substring(2)));
+			}
+			else{
+				sliderTxt.setText(String.valueOf(amountToCall));
+				call(amountToCall);
+			}
 		});
 		// Add item to vbox
-		vb.getChildren().addAll(name, money, fold, check, bet, betSlider, label);
+		vb.getChildren().addAll(fold, check, bet, betSlider, sliderTxt);
 
 	}
 
@@ -747,7 +1036,7 @@ public class GameScene {
 
 	/**
 	 * Adjusts the betting slider
-	 *
+	 * 
 	 * @param min the minimum amount is the double of the amount to be called
 	 * @param max the maximum amount is the amount of money the player has
 	 */
@@ -760,11 +1049,12 @@ public class GameScene {
 			betSlider.setMin(max);
 			betSlider.setMax(max);
 		}
+		betSlider.setValue(min);
 	}
 
 	/**
      * Sets the stage to a new stage
-     *
+     * 
      * @param primaryStage new stage
      */
     public void setStage(Stage primaryStage) {
@@ -773,7 +1063,7 @@ public class GameScene {
 
 	/**
      * Returns the scene that is currently used
-     *
+     * 
      * @return the scene that is currently used
      */
     public static Scene getScene() {
