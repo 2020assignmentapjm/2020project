@@ -82,6 +82,9 @@ public class SceneOption {
         nav.getMenuItem(0).setActive(true);
     }
 
+    /**
+     * Resets the stats folder and the stats UI to 0 for every statistic
+     */
     private void resetStats(){
 
         try{
@@ -106,6 +109,9 @@ public class SceneOption {
         }
     }
 
+    /**
+     * Reads the stats from the stats file
+     */
     public void getStats(){
 
         if (file.exists()) {
@@ -132,6 +138,9 @@ public class SceneOption {
         }
     }
 
+    /**
+     * Updates the UI stats from the stats variable
+     */
     public void updateUI(){
         for (int i=0; i<14; i++){
             stats[i].setText(stats[i].getText().substring(0, stats[i].getText().indexOf(":") + 2)
@@ -139,10 +148,20 @@ public class SceneOption {
         }
     }
 
+    /**
+     * Returns the scene that is currently used
+     * 
+     * @return the scene that is currently used
+     */
     public static Scene getScene() {
         return scene;
     }
 
+    /**
+     * Sets the stage to a new stage
+     * 
+     * @param primaryStage new stage
+     */
     public void setStage(Stage primaryStage) {
         stage = primaryStage;
     }

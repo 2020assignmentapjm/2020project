@@ -160,10 +160,20 @@ public class SceneHelp {
 
     }
 
+    /**
+     * Returns the scene that is currently used
+     * 
+     * @return the scene that is currently used
+     */
     public static Scene getScene() {
         return scene;
     }
 
+    /**
+     * Sets the stage to a new stage
+     * 
+     * @param primaryStage new stage
+     */
     public void setStage(Stage primaryStage) {
         stage = primaryStage;
     }
