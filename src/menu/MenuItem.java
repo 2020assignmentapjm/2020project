@@ -63,6 +63,10 @@ public class MenuItem extends HBox {
         this.text.setText(text);
     }
 
+    public String getText(){
+        return this.text.getText();
+    }
+
     /**
      * Sets the item active or not
      * 
