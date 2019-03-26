@@ -43,6 +43,8 @@ public class GameScene {
 	private Slider betSlider;
 	private ImageView[] dealerCardImages;
 	private ImageView[][] playerCardImages;
+	private ImageView smallBlindImages;
+	private ImageView bigBlindImages;
 	private static Scene scene;
 	private static Stage stage;
 	private Button fold, check, bet;
@@ -63,6 +65,7 @@ public class GameScene {
 	private int smallBlind, bigBlind;
 	private int startingPos;
 	private int pot;
+	private int changeBlinds = 0;
 	private boolean gameEnded;
 	private boolean roundEnded;
 	private int roundNum;
@@ -239,6 +242,7 @@ public class GameScene {
 			if (playerNum == 1) {
 				Platform.runLater(() -> {
 					System.out.println("YOU WON");
+					
 					try {
 						sendStat();
 					} catch (FileNotFoundException e) {
@@ -490,6 +494,44 @@ public class GameScene {
 	private void setPlayerBlinds(int startingPos, boolean state) {
 		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
 		players[(((startingPos - 2) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
+		int translateX = 235;
+		int translateY = 450;
+		int translateX2 = 30;
+		int translateY2 = 450;
+		if(changeBlinds == 0)
+		{
+			ImageView bigBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/bigblind.png");
+			bigBlindImages.setTranslateX(translateX );
+			bigBlindImages.setTranslateY(translateY);
+			bigBlindImages.setFitHeight(50);
+			bigBlindImages.setFitWidth(50);
+			
+			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
+			smallBlindImages.setTranslateX(translateX2);
+			smallBlindImages.setTranslateY(translateY2);
+			smallBlindImages.setFitHeight(50);
+			smallBlindImages.setFitWidth(50);
+			cardPane.getChildren().addAll(bigBlindImages, smallBlindImages);
+			changeBlinds = 1;
+		}
+		else
+		{
+			ImageView bigBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/bigblind.png");
+			bigBlindImages.setTranslateX(translateX2);
+			bigBlindImages.setTranslateY(translateY2);
+			bigBlindImages.setFitHeight(50);
+			bigBlindImages.setFitWidth(50);
+			
+			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
+			smallBlindImages.setTranslateX(translateX);
+			smallBlindImages.setTranslateY(translateY);
+			smallBlindImages.setFitHeight(50);
+			smallBlindImages.setFitWidth(50);
+			cardPane.getChildren().addAll(bigBlindImages, smallBlindImages);
+			changeBlinds = 0;
+		}
+		
+		
 	}
 
 	// execute when fold button is clicked
@@ -866,12 +908,12 @@ public class GameScene {
 		dispWinner.setFill(Color.WHITE);
 		dispWinner.setFont(Font.font(20));
 		dispWinner.setLayoutX(325);
-		dispWinner.setLayoutY(225);
+		dispWinner.setLayoutY(425);
+		
 
 		// Main game pane
 		cardPane = new Pane();
-
-
+		
 		// Player frames
 		playerFrames = new Rectangle[playerNum];
 		playerMI = new MenuItem[playerNum];
@@ -956,7 +998,7 @@ public class GameScene {
 		betSlider.setMajorTickUnit(INITIAL_MONEY / 4);
 		betSlider.setShowTickMarks(true);
 		betSlider.setShowTickLabels(true);
-
+		
 		betSlider.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
