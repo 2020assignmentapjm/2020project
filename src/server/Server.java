@@ -65,7 +65,7 @@ public class Server extends Thread {
                     in[i] = new BufferedReader(new InputStreamReader(clients[i].getInputStream()));     // Input stream for current connected client
                     out[i] = new PrintWriter(clients[i].getOutputStream(), true);                       // Output stream for current connected client
                 
-                    sendMsg(String.valueOf(i), i);
+                    sendMsg("position " + String.valueOf(i), i);
                 }
             }
             catch (SocketTimeoutException s) {

@@ -42,7 +42,15 @@ public class Client extends Thread {
                                                                                          // connected client
                 out = new PrintWriter(client.getOutputStream(), true); // Output stream for current connected client
 
-                position = Integer.valueOf(readMsg());
+                String msg = readMsg();
+                if (msg.contains("position")){
+                    position = Integer.valueOf(msg.substring(9));
+                }
+                else{
+                    System.err.println("Could not read position");
+                    return;
+                }
+
             } catch (IOException e) {
                 System.err.println(e.getMessage());
                 System.exit(-1);
