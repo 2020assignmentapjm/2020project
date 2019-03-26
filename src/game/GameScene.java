@@ -135,36 +135,39 @@ public class GameScene {
 	public Card[] getDealerCards() {
 		return dealerCards;
 	}
+
 	/**
 	 * @return players the array of players
 	 */
 	public Player[] getPlayers() {
 		return players;
 	}
+
 	/**
 	 * @return roundNum the current round number
 	 */
 	public int getRoundNum() {
 		return roundNum;
 	}
+
 	/**
 	 * @return roundEnded whether the round has ended or not
 	 */
 	public boolean getRoundEnded() {
 		return roundEnded;
 	}
+
 	/**
 	 * @return getPlayerNum the current players number in the player array
 	 */
 	public int getPlayerNum() {
 		return playerNum;
 	}
-	//Main function for game
-		/*
-		* Main iteration for the game, tracks and
-		* loops for subround (1 round of bets), rounds (1 hand), and game
-		* Also calls all appropriate functions
-		*/
+	// Main function for game
+	/*
+	 * Main iteration for the game, tracks and loops for subround (1 round of bets),
+	 * rounds (1 hand), and game Also calls all appropriate functions
+	 */
 
 	public void runGame() {
 
@@ -179,8 +182,9 @@ public class GameScene {
 			int subRound = 0;
 			while (subRound < 4) {
 
+				numPlayersPlayed++;
+
 				if (!players[currentPlayer].hasFolded()) {
-					numPlayersPlayed++;
 
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
 
@@ -242,7 +246,7 @@ public class GameScene {
 			// End of Round
 			// Check who won
 			assignPot(); // Assigns pot to a player
-			//Sleep for 5 seconds after each end round
+			// Sleep for 5 seconds after each end round
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e1) {
@@ -285,11 +289,11 @@ public class GameScene {
 			}
 		}
 	}
+
 	/*
-	* Resets the server players cards between rounds
-	* draws cards, and sends them to clients
-	*	Updates the scene
-	*/
+	 * Resets the server players cards between rounds draws cards, and sends them to
+	 * clients Updates the scene
+	 */
 	private void resetServer() {
 		deck = new Deck();
 
@@ -328,11 +332,11 @@ public class GameScene {
 
 		adjustScene();
 	}
+
 	/*
-	* Resets the client players cards between rounds
-	* draws cards, and sends them to clients
-	*	Updates the scene
-	*/
+	 * Resets the client players cards between rounds draws cards, and sends them to
+	 * clients Updates the scene
+	 */
 	private void resetClient() {
 		// Read players info
 		String[] cardsInfo = client.readMsg().split(";");
@@ -361,11 +365,11 @@ public class GameScene {
 
 		adjustScene();
 	}
+
 	/*
-	* Intializes the server for the player
-	* Draws cards, places them on the table, activates the players info
-	*	Updates the scene
-	*/
+	 * Intializes the server for the player Draws cards, places them on the table,
+	 * activates the players info Updates the scene
+	 */
 	private void initializePlayersServer(Server server) {
 
 		players = new Player[playerNum];
@@ -375,7 +379,7 @@ public class GameScene {
 		this.bigBlind = INITIAL_BIG_BLIND;
 
 		deck = new Deck();
-		
+
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
@@ -414,11 +418,11 @@ public class GameScene {
 
 		adjustScene();
 	}
+
 	/*
-	* Intializes the client for the player
-	* Draws cards, places them on the table, activates the players info
-	*	Updates the scene
-	*/
+	 * Intializes the client for the player Draws cards, places them on the table,
+	 * activates the players info Updates the scene
+	 */
 	private void initializePlayersClient(Client client) {
 
 		players = new Player[playerNum];
@@ -458,6 +462,7 @@ public class GameScene {
 
 		adjustScene();
 	}
+
 	/**
 	 * @return if everyplayer has folded
 	 */
@@ -471,6 +476,7 @@ public class GameScene {
 
 		return num == playerNum - 1;
 	}
+
 	/**
 	 * Intializes player stats
 	 */
@@ -484,6 +490,7 @@ public class GameScene {
 			stat_hands[i] = 0;
 		}
 	}
+
 	/**
 	 * Adds the current called values to the pot
 	 */
@@ -496,6 +503,7 @@ public class GameScene {
 		potMI.setText("$ " + pot);
 		potMI.setMinWidth(100);
 	}
+
 	/**
 	 * Sets flop card image when called
 	 */
@@ -504,39 +512,46 @@ public class GameScene {
 			dealerCardImages[i].setImage(dealerCards[i].getCardImage().getImage());
 		}
 	}
+
 	/**
 	 * Sets river card image when called
 	 */
 	private void showRiver() {
 		dealerCardImages[3].setImage(dealerCards[3].getCardImage().getImage());
 	}
+
 	/**
 	 * Sets turn number
 	 */
 	private void showTurn() {
 		dealerCardImages[4].setImage(dealerCards[4].getCardImage().getImage());
 	}
+
 	/**
 	 * @return true if all players have called current value, false otherwise
 	 */
 	private boolean checkAllCalled() {
 		for (int i = 0; i < playerNum; i++) {
-			if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
-				return false;
+			if (!players[i].hasFolded()){
+				if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
+					return false;
+				}
 			}
 		}
 		return true;
 	}
+
 	/**
 	 * increments the blinds
 	 */
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
 		bigBlind *= BLIND_RAISE_RATIO;
-	}	
+	}
+
 	/**
 	 * @param startingPos the players starting position
-	 * @param state whether the player is the big blind or small blind
+	 * @param state       whether the player is the big blind or small blind
 	 */
 	private void setPlayerBlinds(int startingPos, boolean state) {
 		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
@@ -600,6 +615,7 @@ public class GameScene {
 			addStat("bet");
 		}
 	}
+
 	/**
 	 * @return max highest amount called
 	 */
@@ -612,9 +628,11 @@ public class GameScene {
 		}
 		return max;
 	}
+
 	/**
-	 * @param actionID int from 0-3, deescribing the action 0=fold, 1=call, 2=check, 3=bet
-	 * @param wager amount bet if any
+	 * @param actionID int from 0-3, deescribing the action 0=fold, 1=call, 2=check,
+	 *                 3=bet
+	 * @param wager    amount bet if any
 	 */
 	private void sendAction(int actionID, int wager) {
 		String msg = String.valueOf(actionID) + "," + String.valueOf(pot) + ","
@@ -628,34 +646,35 @@ public class GameScene {
 			client.sendMsg(msg);
 		}
 	}
+
 	/*
-	*	Sends recorded game stats
-	*/
+	 * Sends recorded game stats
+	 */
 	private void sendStat() throws FileNotFoundException {
 
 		// Create a File instance
 		File file = new File("stats/PlayerStats.dat");
 
 		int[] tmpStats = new int[14]; // 10 hands + fold, check, call and bet stats
-		for (int i=0; i<14; i++){
+		for (int i = 0; i < 14; i++) {
 			tmpStats[i] = 0;
 		}
 
-		if (file.exists()){
+		if (file.exists()) {
 
 			// Create a Scanner for the file
 			Scanner input = new Scanner(file);
-		
+
 			// Read data from a file
 			String stat = "";
-			if (input.hasNext()){
+			if (input.hasNext()) {
 				stat = input.nextLine();
 			}
 
-			for (int i=0; i<14; i++){
+			for (int i = 0; i < 14; i++) {
 				tmpStats[i] = Integer.valueOf(stat.split(",")[i]);
 			}
-	 
+
 			// Close the file
 			input.close();
 		}
@@ -666,15 +685,14 @@ public class GameScene {
 		tmpStats[2] += stat_call;
 		tmpStats[3] += stat_bet;
 
-		for(int i=0; i<10; i++){
-			tmpStats[i+4] += stat_hands[i];
+		for (int i = 0; i < 10; i++) {
+			tmpStats[i + 4] += stat_hands[i];
 		}
-		
 
 		PrintWriter output = new PrintWriter(file);
 
-		for (int i=0; i<14; i++){
-			if (i != 0){
+		for (int i = 0; i < 14; i++) {
+			if (i != 0) {
 				output.print(",");
 			}
 			output.print(tmpStats[i]);
@@ -683,44 +701,49 @@ public class GameScene {
 		// Close the file
 		output.close();
 	}
+
 	/**
 	 * @param stat adds stat to user
 	 */
-	private void addStat(String stat){
-		if (stat.equals("fold")){
+	private void addStat(String stat) {
+		if (stat.equals("fold")) {
 			stat_fold++;
-		}
-		else if (stat.contains("call")){
-			if (stat.charAt(4) == '0'){
+		} else if (stat.contains("call")) {
+			if (stat.charAt(4) == '0') {
 				stat_check++;
-			}
-			else{
+			} else {
 				stat_call++;
 			}
-		}
-		else if (stat.equals("bet")){
+		} else if (stat.equals("bet")) {
 			stat_bet++;
-		}
-		else{
+		} else {
 			stat_hands[(int) (Double.valueOf(stat) / 100)]++;
 		}
 	}
+
 	/**
-	 * checks if a player is eliminated from the game
-	 * If they are remove them from the player array
+	 * checks if a player is eliminated from the game If they are remove them from
+	 * the player array
 	 */
 	private void checkEliminated() {
 		for (Player player : players) {
 			if (player.getCurrentMoney() == 0) {
-				if (player.getPlayerPosition() == 0){	// Server
+				if (player.getPlayerPosition() == 0) { // Server
 					Platform.runLater(() -> {
 						System.out.println("SERVER HAS LOST");
+
+						try {
+							sendStat();
+						} catch (FileNotFoundException e) {
+							System.err.println("File not found exception");
+						}
+
 						gameEnded = true;
 						stage.setScene(MainMenu.getScene());
 					});
 				}
 
-				if (player == ownPlayer){
+				if (player == ownPlayer) {
 					Platform.runLater(() -> {
 						System.out.println("YOU LOST");
 
@@ -733,20 +756,20 @@ public class GameScene {
 						gameEnded = true;
 						stage.setScene(MainMenu.getScene());
 					});
-				}
-				else{
+				} else {
 					removePlayer(player.getPlayerPosition());
 				}
 			}
 		}
 	}
+
 	/**
 	 * @param index index of player to remove inf player array
 	 */
 	private void removePlayer(int index) {
 		Player playersTemp[] = new Player[--playerNum];
 
-		for (int i=0; i<playerNum; i++) {
+		for (int i = 0; i < playerNum; i++) {
 			if (players[i].getPlayerPosition() != index) {
 				playersTemp[i] = players[i];
 			}
@@ -754,6 +777,7 @@ public class GameScene {
 
 		players = playersTemp;
 	}
+
 	/**
 	 * Check who won this hand and give them the pot
 	 */
@@ -761,17 +785,17 @@ public class GameScene {
 		double max = 0;
 		int maxI = 0;
 
-		for (int i=0; i<playerNum; i++) {
+		for (int i = 0; i < playerNum; i++) {
 			if (!players[i].hasFolded()) {
 
 				Hand hand = new Hand(dealerCards, players[i].getCards());
-				
+
 				// Stats
-				if (ownPlayer == players[i]){
+				if (ownPlayer == players[i]) {
 					addStat(String.valueOf(hand.getHandValue()));
 				}
 
-				if (hand.getHandValue() > max){
+				if (hand.getHandValue() > max) {
 					max = hand.getHandValue();
 					maxI = i;
 				}
@@ -786,14 +810,16 @@ public class GameScene {
 
 		potMI.setMinWidth(100);
 		playerMoneyMI[maxI].setMinWidth(100);
-		
-		//Announce Winner
-		dispWinner.setText("The winner is Player " + (maxI+1));
-		//Reveal All Cards
-		for (Player player: players) {
+
+		// Announce Winner
+		dispWinner.setText("The winner is Player " + (maxI + 1));
+		// Reveal All Cards
+		for (Player player : players) {
 			if (player.getPlayerPosition() != ownPlayer.getPlayerPosition()) {
-				playerCardImages[player.getPlayerPosition()][0].setImage(player.getCards()[0].getCardImage().getImage());
-				playerCardImages[player.getPlayerPosition()][1].setImage(player.getCards()[1].getCardImage().getImage());
+				playerCardImages[player.getPlayerPosition()][0]
+						.setImage(player.getCards()[0].getCardImage().getImage());
+				playerCardImages[player.getPlayerPosition()][1]
+						.setImage(player.getCards()[1].getCardImage().getImage());
 			}
 		}
 	}
@@ -803,20 +829,19 @@ public class GameScene {
 	// -----------------------------------------
 
 	/**
-	 * resets game scene
-	 * places player cards face up , and all other cards face down
+	 * resets game scene places player cards face up , and all other cards face down
 	 * reset pot counter
 	 */
-	private void resetScene(){
+	private void resetScene() {
 		// Initialize delay duration
 		double delayDuration = 0;
 		dispWinner.setText("");
 
 		Platform.runLater(() -> {
-			for (int i=0; i<5; i++){
+			for (int i = 0; i < 5; i++) {
 				dealerCardImages[i].setImage(null);
 			}
-			for (int i=0; i<playerNum; i++){
+			for (int i = 0; i < playerNum; i++) {
 				playerCardImages[i][0].setImage(null);
 				playerCardImages[i][1].setImage(null);
 			}
@@ -824,20 +849,22 @@ public class GameScene {
 			setDealerCards(cardPane, delayDuration);
 			setPlayerCards(cardPane, delayDuration);
 
-			playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
-			playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
+			playerCardImages[ownPlayer.getPlayerPosition()][0]
+					.setImage(ownPlayer.getCards()[0].getCardImage().getImage());
+			playerCardImages[ownPlayer.getPlayerPosition()][1]
+					.setImage(ownPlayer.getCards()[1].getCardImage().getImage());
 		});
 	}
+
 	/*
-	 * Changes test fields for calls in game 
+	 * Changes test fields for calls in game
 	 */
-	private void adjustScene(){
-		for (int i=0; i<playerNum; i++){
-			if (players[i].getAmountCalled() == 0){
+	private void adjustScene() {
+		for (int i = 0; i < playerNum; i++) {
+			if (players[i].getAmountCalled() == 0) {
 				playerAmountCalledMI[i].setText("");
 				playerAmountCalledMI[i].setMinWidth(100);
-			}
-			else{
+			} else {
 				playerAmountCalledMI[i].setText("$ " + String.valueOf(players[i].getAmountCalled()));
 				playerAmountCalledMI[i].setMinWidth(100);
 			}
@@ -845,10 +872,11 @@ public class GameScene {
 			playerMoneyMI[i].setMinWidth(100);
 		}
 	}
+
 	/**
-	 * Allow a player to acces their action buttons
-	 * let them input their bet/fold/call, and reelays to the server their move
-	 * if inactive, the player is waiting to read from the server
+	 * Allow a player to acces their action buttons let them input their
+	 * bet/fold/call, and reelays to the server their move if inactive, the player
+	 * is waiting to read from the server
 	 */
 	private void setActive() {
 
@@ -874,33 +902,30 @@ public class GameScene {
 			}
 
 			disableActions();
-		}
-		else{
+		} else {
 
 			String msg;
 
-			if (ownPlayer.getPlayerPosition() == 0){	// Server
+			if (ownPlayer.getPlayerPosition() == 0) { // Server
 
 				msg = server.readMsg(currentPlayer - 1);
 
-				for (int i = 0; i<playerNum-1; i++){
-					if (i != currentPlayer - 1){
+				for (int i = 0; i < playerNum - 1; i++) {
+					if (i != currentPlayer - 1) {
 						server.sendMsg(msg, i);
 					}
-				}	
-			}
-			else{		// Client
+				}
+			} else { // Client
 				msg = client.readMsg();
 			}
 
 			String[] msgArr = msg.split(",");
 
-			if (Integer.valueOf(msgArr[0]) == 0){	// Fold
+			if (Integer.valueOf(msgArr[0]) == 0) { // Fold
 				playerCardImages[currentPlayer][0].setOpacity(0);
 				playerCardImages[currentPlayer][1].setOpacity(0);
 				players[currentPlayer].setFolded(true);
-			}
-			else{	// Call or Bet
+			} else { // Call or Bet
 				playerMoneyMI[currentPlayer].setText("$ " + msgArr[2]);
 				players[currentPlayer].setMoney(Integer.valueOf(msgArr[2]));
 				playerMoneyMI[currentPlayer].setMinWidth(100);
@@ -915,38 +940,42 @@ public class GameScene {
 
 		playerFrames[currentPlayer].setStroke(Color.WHITE);
 		playerFrames[currentPlayer].setStrokeWidth(1);
-        fadeTransition.stop();
+		fadeTransition.stop();
 	}
+
 	/**
 	 * Allows player access to their buttons
 	 */
-	private void activateActions(){
+	private void activateActions() {
 		fold.setDisable(false);
 		check.setDisable(false);
 		bet.setDisable(false);
 	}
+
 	/**
 	 * removes players access to their buttons
 	 */
-	private void disableActions(){
+	private void disableActions() {
 		fold.setDisable(true);
 		check.setDisable(true);
 		bet.setDisable(true);
 	}
+
 	/**
 	 * Intializes game Scene initializes cards/frames, text in correct positions
-	 * creates different panes for game
-	 * intializes all players in action disabled state
+	 * creates different panes for game intializes all players in action disabled
+	 * state
 	 */
-	private void initializeScene(){
-		// Set main pane and two sub panes: one for the game display one for the control panel
+	private void initializeScene() {
+		// Set main pane and two sub panes: one for the game display one for the control
+		// panel
 		BorderPane root = new BorderPane();
 
 		createActionControl(root);
 
 		disableActions();
-		
-		//Display winner when round ends
+
+		// Display winner when round ends
 		dispWinner = new Text("");
 		dispWinner.setFill(Color.WHITE);
 		dispWinner.setFont(Font.font(20));
@@ -956,14 +985,13 @@ public class GameScene {
 		// Main game pane
 		cardPane = new Pane();
 
-
 		// Player frames
 		playerFrames = new Rectangle[playerNum];
 		playerMI = new MenuItem[playerNum];
 		playerAmountCalledMI = new MenuItem[playerNum];
 		playerMoneyMI = new MenuItem[playerNum];
 
-		for (int i=0; i<playerNum; i++){
+		for (int i = 0; i < playerNum; i++) {
 			playerFrames[i] = new Rectangle(45 + (210 * i), 500, 150, 100);
 			playerFrames[i].setStroke(Color.WHITE);
 			playerFrames[i].setStrokeWidth(1);
@@ -972,9 +1000,9 @@ public class GameScene {
 
 			playerMI[i] = new MenuItem("Player " + (i + 1), 20);
 
-			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
+			playerAmountCalledMI[i] = new MenuItem("", 20); // Only show something when has an amount called
 			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
-			
+
 			playerMoneyMI[i] = new MenuItem("$", 20);
 			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
 
@@ -1001,7 +1029,6 @@ public class GameScene {
 		cardPane.getChildren().addAll(playerFrames);
 		cardPane.getChildren().add(dispWinner);
 
-
 		// Set the center deck which is always upside down
 		ImageView backCardImg = getBackCard();
 		backCardImg.setLayoutX(400);
@@ -1014,22 +1041,20 @@ public class GameScene {
 		setDealerCards(cardPane, delayDuration);
 		setPlayerCards(cardPane, delayDuration);
 
-
 		root.setCenter(cardPane);
-
 
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-		
+
 		// Creating scene with pane
-        scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
+		scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 	}
+
 	/**
-	 * Creates users control "panel"
-	 * initializes and places buttons, and slider
+	 * Creates users control "panel" initializes and places buttons, and slider
 	 */
-	private void createActionControl(BorderPane root){
+	private void createActionControl(BorderPane root) {
 		VBox vb = new VBox();
 		vb.setSpacing(20);
 		vb.setAlignment(Pos.CENTER);
@@ -1038,7 +1063,7 @@ public class GameScene {
 		vb.setStyle("-fx-padding: 0 10 0 0");
 
 		// Slider for betting in the control panel
-		betSlider = new Slider(0, INITIAL_MONEY, 0);	// Current is minimum
+		betSlider = new Slider(0, INITIAL_MONEY, 0); // Current is minimum
 		MenuItem sliderTxt = new MenuItem("$ ", 20);
 		sliderTxt.setStyle("-fx-text-fill:white");
 		betSlider.setMajorTickUnit(INITIAL_MONEY / 4);
@@ -1051,7 +1076,7 @@ public class GameScene {
 				sliderTxt.setText(String.format("$ %.0f", newValue));
 				sliderTxt.setMinWidth(100);
 			}
-        });
+		});
 
 		// Action button images
 		foldImg = new ImageView(new File("images/foldButton.png").toURI().toString());
@@ -1072,10 +1097,9 @@ public class GameScene {
 		bet = new Button();
 		bet.setGraphic(betImg);
 		bet.setOnMouseClicked(e -> {
-			if (!sliderTxt.getText().equals("$ NaN")){
+			if (!sliderTxt.getText().equals("$ NaN")) {
 				bet(Integer.parseInt(sliderTxt.getText().substring(2)));
-			}
-			else{
+			} else {
 				sliderTxt.setText(String.valueOf(amountToCall));
 				call(amountToCall);
 			}
@@ -1084,18 +1108,20 @@ public class GameScene {
 		vb.getChildren().addAll(fold, check, bet, betSlider, sliderTxt);
 
 	}
+
 	/**
 	 * @return imageview of the card back
 	 */
-	private ImageView getBackCard(){
+	private ImageView getBackCard() {
 		return new ImageView(new File("images/Cards/backCard.png").toURI().toString());
 	}
+
 	/**
-	 * @param cardPane sub pane that holds playercards
+	 * @param cardPane      sub pane that holds playercards
 	 * @param delayduration delay to sync and make animations "pretty"
 	 */
 
-	private void setPlayerCards(Pane cardPane, double delayDuration){
+	private void setPlayerCards(Pane cardPane, double delayDuration) {
 		playerCardImages = new ImageView[4][2];
 		int cardGap = 0;
 
@@ -1121,11 +1147,12 @@ public class GameScene {
 			cardGap += 70;
 		}
 	}
+
 	/**
-	 * @param cardPane sub pane that holds playercards
+	 * @param cardPane      sub pane that holds playercards
 	 * @param delayduration delay to sync and make animations "pretty"
 	 */
-	private void setDealerCards(Pane cardPane, double delayDuration){
+	private void setDealerCards(Pane cardPane, double delayDuration) {
 		dealerCardImages = new ImageView[5];
 		int cardGap = 0;
 
@@ -1165,12 +1192,11 @@ public class GameScene {
 	 * @param min the minimum amount is the double of the amount to be called
 	 * @param max the maximum amount is the amount of money the player has
 	 */
-	private void adjustSlider(int min, int max){
-		if (min < max){
+	private void adjustSlider(int min, int max) {
+		if (min < max) {
 			betSlider.setMin(min);
 			betSlider.setMax(max);
-		}
-		else{
+		} else {
 			betSlider.setMin(max);
 			betSlider.setMax(max);
 		}
@@ -1178,20 +1204,20 @@ public class GameScene {
 	}
 
 	/**
-     * Sets the stage to a new stage
-     * 
-     * @param primaryStage new stage
-     */
-    public void setStage(Stage primaryStage) {
-        stage = primaryStage;
-    }
+	 * Sets the stage to a new stage
+	 * 
+	 * @param primaryStage new stage
+	 */
+	public void setStage(Stage primaryStage) {
+		stage = primaryStage;
+	}
 
 	/**
-     * Returns the scene that is currently used
-     * 
-     * @return the scene that is currently used
-     */
-    public static Scene getScene() {
-        return scene;
-    }
+	 * Returns the scene that is currently used
+	 * 
+	 * @return the scene that is currently used
+	 */
+	public static Scene getScene() {
+		return scene;
+	}
 }
