@@ -27,14 +27,14 @@ public class SceneHelp {
     private final String BACKGROUND_IMG_PATH = "images/Cards/pokertable.jpg";
 
     public SceneHelp() {
-        GridPane pane = new GridPane();
+        GridPane pane = new GridPane(); // initialize pane
         pane.setAlignment(Pos.CENTER);
         pane.setHgap(VBOX_SPACING/2);
         pane.setVgap(VBOX_SPACING);
         File imgF = new File(BACKGROUND_IMG_PATH);
         pane.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
 
-        HBox rf = new HBox();
+        HBox rf = new HBox();//HBox for holding the royal flush images
         ImageView imageView1 = new Card("AH").getCardImage();
         ImageView imageView2 = new Card("KH").getCardImage();
         ImageView imageView3 = new Card("QH").getCardImage();
@@ -43,9 +43,9 @@ public class SceneHelp {
         MenuItem mI1 = new MenuItem("ROYAL FLUSH", 12);
         mI1.disableBold();
         rf.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI1);
-        GridPane.setConstraints(rf, 0, 0);
+        GridPane.setConstraints(rf, 0, 0); // set for grid placing of hand
 
-        HBox sf = new HBox();
+        HBox sf = new HBox();//HBox for holding the straight flush images
         imageView1 = new Card("AC").getCardImage();
         imageView2 = new Card("2C").getCardImage();
         imageView3 = new Card("3C").getCardImage();
@@ -54,9 +54,9 @@ public class SceneHelp {
         MenuItem mI2 = new MenuItem("STRAIGHT FLUSH", 12);
         mI2.disableBold();
         sf.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI2);
-        GridPane.setConstraints(sf, 0, 1);
+        GridPane.setConstraints(sf, 0, 1);// set for grid placing of hand
 
-        HBox fk = new HBox();
+        HBox fk = new HBox();//HBox for holding the four of a kind card images
         imageView1 = new Card("JD").getCardImage();
         imageView2 = new Card("JH").getCardImage();
         imageView3 = new Card("JC").getCardImage();
@@ -65,9 +65,9 @@ public class SceneHelp {
         MenuItem mI3 = new MenuItem("FOUR OF A KIND", 12);
         mI3.disableBold();
         fk.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI3);
-        GridPane.setConstraints(fk, 0, 2);
+        GridPane.setConstraints(fk, 0, 2);// set for grid placing of hand
 
-        HBox fh = new HBox();
+        HBox fh = new HBox(); //HBox for holding the full house images
         imageView1 = new Card("5C").getCardImage();
         imageView2 = new Card("5H").getCardImage();
         imageView3 = new Card("5S").getCardImage();
@@ -78,7 +78,7 @@ public class SceneHelp {
         fh.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI4);
         GridPane.setConstraints(fh, 0, 3);
 
-        HBox f = new HBox();
+        HBox f = new HBox(); //HBox for holding the flush images
         imageView1 = new Card("KD").getCardImage();
         imageView2 = new Card("5D").getCardImage();
         imageView3 = new Card("7D").getCardImage();
@@ -87,9 +87,9 @@ public class SceneHelp {
         MenuItem mI5 = new MenuItem("FLUSH", 12);
         mI5.disableBold();
         f.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI5);
-        GridPane.setConstraints(f, 0, 4);
+        GridPane.setConstraints(f, 0, 4);// set for grid placing of hand
 
-        HBox s = new HBox();
+        HBox s = new HBox();//HBox for the holding the straiht hand images
         imageView1 = new Card("4S").getCardImage();
         imageView2 = new Card("5D").getCardImage();
         imageView3 = new Card("6C").getCardImage();
@@ -98,9 +98,9 @@ public class SceneHelp {
         MenuItem mI6 = new MenuItem("STRAIGHT", 12);
         mI6.disableBold();
         s.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI6);
-        GridPane.setConstraints(s, 1, 0);
+        GridPane.setConstraints(s, 1, 0);// set for grid placing of hands
 
-        HBox tk = new HBox();
+        HBox tk = new HBox();//HBox for holding three of a kind hand
         imageView1 = new Card("7S").getCardImage();
         imageView2 = new Card("7H").getCardImage();
         imageView3 = new Card("7C").getCardImage();
@@ -109,9 +109,9 @@ public class SceneHelp {
         MenuItem mI7 = new MenuItem("THREE OF A KIND", 12);
         mI7.disableBold();
         tk.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI7);
-        GridPane.setConstraints(tk, 1, 1);
+        GridPane.setConstraints(tk, 1, 1);// set for grid placing of hand
 
-        HBox tp = new HBox();
+        HBox tp = new HBox();//HBox for holding two pair hand
         imageView1 = new Card("QD").getCardImage();
         imageView2 = new Card("QC").getCardImage();
         imageView3 = new Card("3C").getCardImage();
@@ -120,9 +120,9 @@ public class SceneHelp {
         MenuItem mI8 = new MenuItem("TWO PAIR", 12);
         mI8.disableBold();
         tp.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI8);
-        GridPane.setConstraints(tp, 1, 2);
+        GridPane.setConstraints(tp, 1, 2);// set for grid placing of hand
 
-        HBox p = new HBox();
+        HBox p = new HBox();// HBox for holding the pair hand
         imageView1 = new Card("KS").getCardImage();
         imageView2 = new Card("KH").getCardImage();
         imageView3 = new Card("2C").getCardImage();
@@ -131,9 +131,9 @@ public class SceneHelp {
         MenuItem mI9 = new MenuItem("PAIR", 12);
         mI9.disableBold();
         p.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI9);
-        GridPane.setConstraints(p, 1, 3);
+        GridPane.setConstraints(p, 1, 3);// set for grid placing of hands
 
-        HBox hc = new HBox();
+        HBox hc = new HBox();//HBox for holding high card hand
         imageView1 = new Card("KH").getCardImage();
         imageView2 = new Card("2H").getCardImage();
         imageView3 = new Card("4S").getCardImage();
@@ -142,7 +142,7 @@ public class SceneHelp {
         MenuItem mI10 = new MenuItem("HIGH CARD", 12);
         mI10.disableBold();
         hc.getChildren().addAll(imageView1, imageView2, imageView3, imageView4, imageView5, mI10);
-        GridPane.setConstraints(hc, 1, 4);
+        GridPane.setConstraints(hc, 1, 4); // set for grid placing of hand
 
         HBox bck = new HBox();
         MenuItem back = new MenuItem("BACK", 30);
@@ -150,9 +150,9 @@ public class SceneHelp {
         bck.getChildren().add(menuBox);
         GridPane.setConstraints(bck, 0, 10);
 
-        pane.getChildren().addAll(rf, sf, fk, fh, f, s, tk, tp, p, hc, bck);
+        pane.getChildren().addAll(rf, sf, fk, fh, f, s, tk, tp, p, hc, bck); // each HBox added to gridpane
 
-        back.setOnActivate(() -> stage.setScene(MainMenu.getScene()));
+        back.setOnActivate(() -> stage.setScene(MainMenu.getScene()));//eventhandler for back button to return to main menu
 
         scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
         MenuNav nav2 = new MenuNav(scene, menuBox, 0);
