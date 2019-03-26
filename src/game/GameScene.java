@@ -132,27 +132,42 @@ public class GameScene {
 	// -----------------------------------------
 	// GAME METHODS
 	// -----------------------------------------
-
+	/**
+	 * @return dealerCards the cards on the table
+	 */
 	public Card[] getDealerCards() {
 		return dealerCards;
 	}
-
+	/**
+	 * @return players the array of players
+	 */
 	public Player[] getPlayers() {
 		return players;
 	}
-
+	/**
+	 * @return roundNum the current round number
+	 */
 	public int getRoundNum() {
 		return roundNum;
 	}
-
+	/**
+	 * @return roundEnded whether the round has ended or not
+	 */
 	public boolean getRoundEnded() {
 		return roundEnded;
 	}
-
+	/**
+	 * @return getPlayerNum the current players number in the player array
+	 */
 	public int getPlayerNum() {
 		return playerNum;
 	}
-
+	//Main function for game
+	/*
+	* Main iteration for the game, tracks and
+	* loops for subround (1 round of bets), rounds (1 hand), and game
+	* Also calls all appropriate functions
+	*/
 	public void runGame() {
 
 		roundNum = 0;
@@ -242,7 +257,7 @@ public class GameScene {
 			if (playerNum == 1) {
 				Platform.runLater(() -> {
 					System.out.println("YOU WON");
-					
+
 					try {
 						sendStat();
 					} catch (FileNotFoundException e) {
@@ -274,6 +289,11 @@ public class GameScene {
 		}
 	}
 
+	/*
+	* Resets the server players cards between rounds
+	* draws cards, and sends them to clients
+	*	Updates the scene
+	*/
 	private void resetServer() {
 		deck = new Deck();
 
@@ -312,7 +332,11 @@ public class GameScene {
 
 		adjustScene();
 	}
-
+	/*
+	* Resets the client players cards between rounds
+	* draws cards, and sends them to clients
+	*	Updates the scene
+	*/
 	private void resetClient() {
 		// Read players info
 		String[] cardsInfo = client.readMsg().split(";");
@@ -342,6 +366,11 @@ public class GameScene {
 		adjustScene();
 	}
 
+	/*
+	* Intializes the server for the player
+	* Draws cards, places them on the table, activates the players info
+	*	Updates the scene
+	*/
 	private void initializePlayersServer(Server server) {
 
 		players = new Player[playerNum];
@@ -351,7 +380,7 @@ public class GameScene {
 		this.bigBlind = INITIAL_BIG_BLIND;
 
 		deck = new Deck();
-		
+
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
@@ -360,7 +389,8 @@ public class GameScene {
 			}
 			dealerCardsString += dealerCards[i];
 		}
-
+		//Creates the default player msg for the clients
+		//used to communicate between client/server
 		for (int i = 0; i < playerNum; i++) {
 			players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
 					deck.dealCards(2));
@@ -390,7 +420,11 @@ public class GameScene {
 
 		adjustScene();
 	}
-
+	/*
+	* Intializes the client for the player
+	* Draws cards, places them on the table, activates the players info
+	*	Updates the scene
+	*/
 	private void initializePlayersClient(Client client) {
 
 		players = new Player[playerNum];
@@ -419,7 +453,7 @@ public class GameScene {
 		}
 
 		ownPlayer = players[client.getPosition() + 1]; // Including server
-
+		//places cards on table
 		playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
 		playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
 
@@ -430,7 +464,9 @@ public class GameScene {
 
 		adjustScene();
 	}
-
+	/**
+	 * @return if everyplayer has folded
+	 */
 	private boolean checkFolded() {
 		int num = 0;
 		for (int i = 0; i < playerNum; i++) {
@@ -441,7 +477,9 @@ public class GameScene {
 
 		return num == playerNum - 1;
 	}
-
+	/**
+	 * Intializes player stats
+	 */
 	private void statsInit() {
 		stat_fold = 0;
 		stat_check = 0;
@@ -452,7 +490,9 @@ public class GameScene {
 			stat_hands[i] = 0;
 		}
 	}
-
+	/**
+	 * Adds the current called values to the pot
+	 */
 	private void pushCallsToPot() {
 		for (int i = 0; i < playerNum; i++) {
 			pot += players[i].getAmountCalled();
@@ -462,21 +502,29 @@ public class GameScene {
 		potMI.setText("$ " + pot);
 		potMI.setMinWidth(100);
 	}
-
+	/**
+	 * Sets flop card image when called
+	 */
 	private void showFlop() {
 		for (int i = 0; i < 3; i++) {
 			dealerCardImages[i].setImage(dealerCards[i].getCardImage().getImage());
 		}
 	}
-
+	/**
+	 * Sets river card image when called
+	 */
 	private void showRiver() {
 		dealerCardImages[3].setImage(dealerCards[3].getCardImage().getImage());
 	}
-
+	/**
+	 * Sets turn number
+	 */
 	private void showTurn() {
 		dealerCardImages[4].setImage(dealerCards[4].getCardImage().getImage());
 	}
-
+	/**
+	 * @return true if all players have called current value, false otherwise
+	 */
 	private boolean checkAllCalled() {
 		for (int i = 0; i < playerNum; i++) {
 			if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
@@ -485,12 +533,17 @@ public class GameScene {
 		}
 		return true;
 	}
-
+	/**
+	 * increments the blinds
+	 */
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
 		bigBlind *= BLIND_RAISE_RATIO;
 	}
-
+	/**
+	 * @param startingPos the players starting position
+	 * @param state whetheer the player is the big blind or small blind
+	 */
 	private void setPlayerBlinds(int startingPos, boolean state) {
 		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
 		players[(((startingPos - 2) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
@@ -498,6 +551,7 @@ public class GameScene {
 		int translateY = 450;
 		int translateX2 = 30;
 		int translateY2 = 450;
+		//ImageView for the blind chips
 		if(changeBlinds == 0)
 		{
 			ImageView bigBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/bigblind.png");
@@ -505,7 +559,7 @@ public class GameScene {
 			bigBlindImages.setTranslateY(translateY);
 			bigBlindImages.setFitHeight(50);
 			bigBlindImages.setFitWidth(50);
-			
+
 			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
 			smallBlindImages.setTranslateX(translateX2);
 			smallBlindImages.setTranslateY(translateY2);
@@ -521,7 +575,7 @@ public class GameScene {
 			bigBlindImages.setTranslateY(translateY2);
 			bigBlindImages.setFitHeight(50);
 			bigBlindImages.setFitWidth(50);
-			
+
 			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
 			smallBlindImages.setTranslateX(translateX);
 			smallBlindImages.setTranslateY(translateY);
@@ -530,8 +584,8 @@ public class GameScene {
 			cardPane.getChildren().addAll(bigBlindImages, smallBlindImages);
 			changeBlinds = 0;
 		}
-		
-		
+
+
 	}
 
 	// execute when fold button is clicked
@@ -591,7 +645,9 @@ public class GameScene {
 			addStat("bet");
 		}
 	}
-
+	/**
+	 * @return max highest amount called
+	 */
 	private int getMaxAmToCall() {
 		int max = 0;
 		for (int i = 0; i < playerNum; i++) {
@@ -601,7 +657,10 @@ public class GameScene {
 		}
 		return max;
 	}
-
+	/**
+	 * @param actionID int from 0-3, deescribing the action 0=fold, 1=call, 2=check, 3=bet
+	 * @param wager amount bet if any
+	 */
 	private void sendAction(int actionID, int wager) {
 		String msg = String.valueOf(actionID) + "," + String.valueOf(pot) + ","
 				+ String.valueOf(ownPlayer.getCurrentMoney() + "," + String.valueOf(ownPlayer.getAmountCalled()));
@@ -614,7 +673,9 @@ public class GameScene {
 			client.sendMsg(msg);
 		}
 	}
-
+	/*
+	*	Sends recorded game stats
+	*/
 	private void sendStat() throws FileNotFoundException {
 
 		// Create a File instance
@@ -629,7 +690,7 @@ public class GameScene {
 
 			// Create a Scanner for the file
 			Scanner input = new Scanner(file);
-		
+
 			// Read data from a file
 			String stat = "";
 			if (input.hasNext()){
@@ -639,7 +700,7 @@ public class GameScene {
 			for (int i=0; i<14; i++){
 				tmpStats[i] = Integer.valueOf(stat.split(",")[i]);
 			}
-	 
+
 			// Close the file
 			input.close();
 		}
@@ -653,7 +714,7 @@ public class GameScene {
 		for(int i=0; i<10; i++){
 			tmpStats[i+4] += stat_hands[i];
 		}
-		
+
 
 		PrintWriter output = new PrintWriter(file);
 
@@ -667,7 +728,9 @@ public class GameScene {
 		// Close the file
 		output.close();
 	}
-
+	/**
+	 * @param stat adds stat to user
+	 */
 	private void addStat(String stat){
 		if (stat.equals("fold")){
 			stat_fold++;
@@ -687,7 +750,10 @@ public class GameScene {
 			stat_hands[(int) (Double.valueOf(stat) / 100)]++;
 		}
 	}
-
+	/**
+	 * checks if a player is eliminated from the game
+	 * If they are remove them from the player array
+	 */
 	private void checkEliminated() {
 		for (Player player : players) {
 			if (player.getCurrentMoney() == 0) {
@@ -719,7 +785,9 @@ public class GameScene {
 			}
 		}
 	}
-
+	/**
+	 * @param index index of player to remove inf player array
+	 */
 	private void removePlayer(int index) {
 		Player playersTemp[] = new Player[--playerNum];
 
@@ -731,7 +799,9 @@ public class GameScene {
 
 		players = playersTemp;
 	}
-
+	/**
+	 * Check who won this hand and give them the pot
+	 */
 	private void assignPot() {
 		double max = 0;
 		int maxI = 0;
@@ -740,7 +810,7 @@ public class GameScene {
 			if (!players[i].hasFolded()) {
 
 				Hand hand = new Hand(dealerCards, players[i].getCards());
-				
+
 				// Stats
 				if (ownPlayer == players[i]){
 					addStat(String.valueOf(hand.getHandValue()));
@@ -761,7 +831,7 @@ public class GameScene {
 
 		potMI.setMinWidth(100);
 		playerMoneyMI[maxI].setMinWidth(100);
-		
+
 		//Announce Winner
 		dispWinner.setText("The winner is Player " + (maxI+1));
 		//Reveal All Cards
@@ -777,7 +847,11 @@ public class GameScene {
 	// SCENE METHODS
 	// -----------------------------------------
 
-
+	/**
+	 * resets game scene
+	 * places player cards face up , and all other cards face down
+	 * reset pot counter
+	 */
 	private void resetScene(){
 		// Initialize delay duration
 		double delayDuration = 0;
@@ -814,7 +888,11 @@ public class GameScene {
 			playerMoneyMI[i].setMinWidth(100);
 		}
 	}
-
+	/**
+	 * Allow a player to acces their action buttons
+	 * let them input their bet/fold/call, and reelays to the server their move
+	 * if inactive, the player is waiting to read from the server
+	 */
 	private void setActive() {
 
 		playerFrames[currentPlayer].setStroke(Color.RED);
@@ -852,7 +930,7 @@ public class GameScene {
 					if (i != currentPlayer - 1){
 						server.sendMsg(msg, i);
 					}
-				}	
+				}
 			}
 			else{		// Client
 				msg = client.readMsg();
@@ -882,19 +960,27 @@ public class GameScene {
 		playerFrames[currentPlayer].setStrokeWidth(1);
         fadeTransition.stop();
 	}
-
+	/**
+	 * Allows playeer access to their buttons
+	 */
 	private void activateActions(){
 		fold.setDisable(false);
 		check.setDisable(false);
 		bet.setDisable(false);
 	}
-
+	/**
+	 * removess players accesss to their buttons
+	 */
 	private void disableActions(){
 		fold.setDisable(true);
 		check.setDisable(true);
 		bet.setDisable(true);
 	}
-
+	/**
+	 * Intializes game Scene initializes cards/frames, text in correct positions
+	 * creates different panes for game
+	 * intializes all players in action disabled state
+	 */
 	private void initializeScene(){
 		// Set main pane and two sub panes: one for the game display one for the control panel
 		BorderPane root = new BorderPane();
@@ -902,18 +988,18 @@ public class GameScene {
 		createActionControl(root);
 
 		disableActions();
-		
+
 		//Display winner when round ends
 		dispWinner = new Text("");
 		dispWinner.setFill(Color.WHITE);
 		dispWinner.setFont(Font.font(20));
 		dispWinner.setLayoutX(325);
 		dispWinner.setLayoutY(425);
-		
+
 
 		// Main game pane
 		cardPane = new Pane();
-		
+
 		// Player frames
 		playerFrames = new Rectangle[playerNum];
 		playerMI = new MenuItem[playerNum];
@@ -931,7 +1017,7 @@ public class GameScene {
 
 			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
 			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
-			
+
 			playerMoneyMI[i] = new MenuItem("$", 20);
 			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
 
@@ -948,7 +1034,7 @@ public class GameScene {
 		dealerFrame.setStroke(Color.WHITE);
 
 		potMI = new MenuItem("$", 20);
-
+		//dealer box
 		dealerBox.getChildren().addAll(dealerFrame, potMI);
 		dealerBox.setLayoutX(260);
 		dealerBox.setLayoutY(250);
@@ -978,11 +1064,14 @@ public class GameScene {
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-		
+
 		// Creating scene with pane
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 	}
-
+	/**
+	 * Creates users control "panel"
+	 * initializes and places buttons, and slider
+	 */
 	private void createActionControl(BorderPane root){
 		VBox vb = new VBox();
 		vb.setSpacing(20);
@@ -998,7 +1087,7 @@ public class GameScene {
 		betSlider.setMajorTickUnit(INITIAL_MONEY / 4);
 		betSlider.setShowTickMarks(true);
 		betSlider.setShowTickLabels(true);
-		
+
 		betSlider.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -1038,11 +1127,16 @@ public class GameScene {
 		vb.getChildren().addAll(fold, check, bet, betSlider, sliderTxt);
 
 	}
-
+	/**
+	 * @return imageview of the card back
+	 */
 	private ImageView getBackCard(){
 		return new ImageView(new File("images/Cards/backCard.png").toURI().toString());
 	}
-
+	/**
+	 * @param cardPane sub pane that holds playercards
+	 * @param delayduration delay to sync and make animations "pretty"
+	 */
 	private void setPlayerCards(Pane cardPane, double delayDuration){
 		playerCardImages = new ImageView[4][2];
 		int cardGap = 0;
@@ -1069,7 +1163,10 @@ public class GameScene {
 			cardGap += 70;
 		}
 	}
-
+	/**
+	 * @param cardPane sub pane that holds playercards
+	 * @param delayduration delay to sync and make animations "pretty"
+	 */
 	private void setDealerCards(Pane cardPane, double delayDuration){
 		dealerCardImages = new ImageView[5];
 		int cardGap = 0;
@@ -1106,7 +1203,7 @@ public class GameScene {
 
 	/**
 	 * Adjusts the betting slider
-	 * 
+	 *
 	 * @param min the minimum amount is the double of the amount to be called
 	 * @param max the maximum amount is the amount of money the player has
 	 */
@@ -1124,7 +1221,7 @@ public class GameScene {
 
 	/**
      * Sets the stage to a new stage
-     * 
+     *
      * @param primaryStage new stage
      */
     public void setStage(Stage primaryStage) {
@@ -1133,7 +1230,7 @@ public class GameScene {
 
 	/**
      * Returns the scene that is currently used
-     * 
+     *
      * @return the scene that is currently used
      */
     public static Scene getScene() {
