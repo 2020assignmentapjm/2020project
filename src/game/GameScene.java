@@ -43,8 +43,6 @@ public class GameScene {
 	private Slider betSlider;
 	private ImageView[] dealerCardImages;
 	private ImageView[][] playerCardImages;
-	private ImageView smallBlindImages;
-	private ImageView bigBlindImages;
 	private static Scene scene;
 	private static Stage stage;
 	private Button fold, check, bet;
@@ -65,7 +63,6 @@ public class GameScene {
 	private int smallBlind, bigBlind;
 	private int startingPos;
 	private int pot;
-	private int changeBlinds = 0;
 	private boolean gameEnded;
 	private boolean roundEnded;
 	private int roundNum;
@@ -163,11 +160,12 @@ public class GameScene {
 		return playerNum;
 	}
 	//Main function for game
-	/*
-	* Main iteration for the game, tracks and
-	* loops for subround (1 round of bets), rounds (1 hand), and game
-	* Also calls all appropriate functions
-	*/
+		/*
+		* Main iteration for the game, tracks and
+		* loops for subround (1 round of bets), rounds (1 hand), and game
+		* Also calls all appropriate functions
+		*/
+
 	public void runGame() {
 
 		roundNum = 0;
@@ -257,7 +255,6 @@ public class GameScene {
 			if (playerNum == 1) {
 				Platform.runLater(() -> {
 					System.out.println("YOU WON");
-
 					try {
 						sendStat();
 					} catch (FileNotFoundException e) {
@@ -288,7 +285,6 @@ public class GameScene {
 			}
 		}
 	}
-
 	/*
 	* Resets the server players cards between rounds
 	* draws cards, and sends them to clients
@@ -365,7 +361,6 @@ public class GameScene {
 
 		adjustScene();
 	}
-
 	/*
 	* Intializes the server for the player
 	* Draws cards, places them on the table, activates the players info
@@ -380,7 +375,7 @@ public class GameScene {
 		this.bigBlind = INITIAL_BIG_BLIND;
 
 		deck = new Deck();
-
+		
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
@@ -389,8 +384,7 @@ public class GameScene {
 			}
 			dealerCardsString += dealerCards[i];
 		}
-		//Creates the default player msg for the clients
-		//used to communicate between client/server
+
 		for (int i = 0; i < playerNum; i++) {
 			players[i] = new Player("Player " + Integer.toString(i + 1), INITIAL_MONEY, i, false, false, false, false,
 					deck.dealCards(2));
@@ -453,7 +447,7 @@ public class GameScene {
 		}
 
 		ownPlayer = players[client.getPosition() + 1]; // Including server
-		//places cards on table
+
 		playerCardImages[ownPlayer.getPlayerPosition()][0].setImage(ownPlayer.getCards()[0].getCardImage().getImage());
 		playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
 
@@ -539,53 +533,14 @@ public class GameScene {
 	private void raiseBlinds() {
 		smallBlind *= BLIND_RAISE_RATIO;
 		bigBlind *= BLIND_RAISE_RATIO;
-	}
+	}	
 	/**
 	 * @param startingPos the players starting position
-	 * @param state whetheer the player is the big blind or small blind
+	 * @param state whether the player is the big blind or small blind
 	 */
 	private void setPlayerBlinds(int startingPos, boolean state) {
 		players[(((startingPos - 1) % playerNum) + playerNum) % playerNum].setBigBlind(state, bigBlind);
 		players[(((startingPos - 2) % playerNum) + playerNum) % playerNum].setSmallBlind(state, smallBlind);
-		int translateX = 235;
-		int translateY = 450;
-		int translateX2 = 30;
-		int translateY2 = 450;
-		//ImageView for the blind chips
-		if(changeBlinds == 0)
-		{
-			ImageView bigBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/bigblind.png");
-			bigBlindImages.setTranslateX(translateX );
-			bigBlindImages.setTranslateY(translateY);
-			bigBlindImages.setFitHeight(50);
-			bigBlindImages.setFitWidth(50);
-
-			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
-			smallBlindImages.setTranslateX(translateX2);
-			smallBlindImages.setTranslateY(translateY2);
-			smallBlindImages.setFitHeight(50);
-			smallBlindImages.setFitWidth(50);
-			cardPane.getChildren().addAll(bigBlindImages, smallBlindImages);
-			changeBlinds = 1;
-		}
-		else
-		{
-			ImageView bigBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/bigblind.png");
-			bigBlindImages.setTranslateX(translateX2);
-			bigBlindImages.setTranslateY(translateY2);
-			bigBlindImages.setFitHeight(50);
-			bigBlindImages.setFitWidth(50);
-
-			ImageView smallBlindImages = new ImageView("file:///C:/Users/notbe/eclipse-workspace/Working2020Project/images/smallblind.png");
-			smallBlindImages.setTranslateX(translateX);
-			smallBlindImages.setTranslateY(translateY);
-			smallBlindImages.setFitHeight(50);
-			smallBlindImages.setFitWidth(50);
-			cardPane.getChildren().addAll(bigBlindImages, smallBlindImages);
-			changeBlinds = 0;
-		}
-
-
 	}
 
 	// execute when fold button is clicked
@@ -690,7 +645,7 @@ public class GameScene {
 
 			// Create a Scanner for the file
 			Scanner input = new Scanner(file);
-
+		
 			// Read data from a file
 			String stat = "";
 			if (input.hasNext()){
@@ -700,7 +655,7 @@ public class GameScene {
 			for (int i=0; i<14; i++){
 				tmpStats[i] = Integer.valueOf(stat.split(",")[i]);
 			}
-
+	 
 			// Close the file
 			input.close();
 		}
@@ -714,7 +669,7 @@ public class GameScene {
 		for(int i=0; i<10; i++){
 			tmpStats[i+4] += stat_hands[i];
 		}
-
+		
 
 		PrintWriter output = new PrintWriter(file);
 
@@ -810,7 +765,7 @@ public class GameScene {
 			if (!players[i].hasFolded()) {
 
 				Hand hand = new Hand(dealerCards, players[i].getCards());
-
+				
 				// Stats
 				if (ownPlayer == players[i]){
 					addStat(String.valueOf(hand.getHandValue()));
@@ -831,7 +786,7 @@ public class GameScene {
 
 		potMI.setMinWidth(100);
 		playerMoneyMI[maxI].setMinWidth(100);
-
+		
 		//Announce Winner
 		dispWinner.setText("The winner is Player " + (maxI+1));
 		//Reveal All Cards
@@ -873,7 +828,9 @@ public class GameScene {
 			playerCardImages[ownPlayer.getPlayerPosition()][1].setImage(ownPlayer.getCards()[1].getCardImage().getImage());
 		});
 	}
-
+	/*
+	 * Changes test fields for calls in game 
+	 */
 	private void adjustScene(){
 		for (int i=0; i<playerNum; i++){
 			if (players[i].getAmountCalled() == 0){
@@ -930,7 +887,7 @@ public class GameScene {
 					if (i != currentPlayer - 1){
 						server.sendMsg(msg, i);
 					}
-				}
+				}	
 			}
 			else{		// Client
 				msg = client.readMsg();
@@ -961,7 +918,7 @@ public class GameScene {
         fadeTransition.stop();
 	}
 	/**
-	 * Allows playeer access to their buttons
+	 * Allows player access to their buttons
 	 */
 	private void activateActions(){
 		fold.setDisable(false);
@@ -969,7 +926,7 @@ public class GameScene {
 		bet.setDisable(false);
 	}
 	/**
-	 * removess players accesss to their buttons
+	 * removes players access to their buttons
 	 */
 	private void disableActions(){
 		fold.setDisable(true);
@@ -988,7 +945,7 @@ public class GameScene {
 		createActionControl(root);
 
 		disableActions();
-
+		
 		//Display winner when round ends
 		dispWinner = new Text("");
 		dispWinner.setFill(Color.WHITE);
@@ -996,9 +953,9 @@ public class GameScene {
 		dispWinner.setLayoutX(325);
 		dispWinner.setLayoutY(425);
 
-
 		// Main game pane
 		cardPane = new Pane();
+
 
 		// Player frames
 		playerFrames = new Rectangle[playerNum];
@@ -1017,7 +974,7 @@ public class GameScene {
 
 			playerAmountCalledMI[i] = new MenuItem("", 20);		// Only show something when has an amount called
 			playerAmountCalledMI[i].setStyle("-fx-padding: 0 0 10 0");
-
+			
 			playerMoneyMI[i] = new MenuItem("$", 20);
 			playerMoneyMI[i].setStyle("-fx-padding: 110 0 0 0");
 
@@ -1034,7 +991,7 @@ public class GameScene {
 		dealerFrame.setStroke(Color.WHITE);
 
 		potMI = new MenuItem("$", 20);
-		//dealer box
+
 		dealerBox.getChildren().addAll(dealerFrame, potMI);
 		dealerBox.setLayoutX(260);
 		dealerBox.setLayoutY(250);
@@ -1064,7 +1021,7 @@ public class GameScene {
 		// Background
 		File imgF = new File(BACKGROUND_IMG_PATH);
 		root.setStyle("-fx-background-image: url(" + imgF.toURI().toString() + "); -fx-background-size: cover;");
-
+		
 		// Creating scene with pane
         scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 	}
@@ -1137,6 +1094,7 @@ public class GameScene {
 	 * @param cardPane sub pane that holds playercards
 	 * @param delayduration delay to sync and make animations "pretty"
 	 */
+
 	private void setPlayerCards(Pane cardPane, double delayDuration){
 		playerCardImages = new ImageView[4][2];
 		int cardGap = 0;
@@ -1203,7 +1161,7 @@ public class GameScene {
 
 	/**
 	 * Adjusts the betting slider
-	 *
+	 * 
 	 * @param min the minimum amount is the double of the amount to be called
 	 * @param max the maximum amount is the amount of money the player has
 	 */
@@ -1221,7 +1179,7 @@ public class GameScene {
 
 	/**
      * Sets the stage to a new stage
-     *
+     * 
      * @param primaryStage new stage
      */
     public void setStage(Stage primaryStage) {
@@ -1230,7 +1188,7 @@ public class GameScene {
 
 	/**
      * Returns the scene that is currently used
-     *
+     * 
      * @return the scene that is currently used
      */
     public static Scene getScene() {
