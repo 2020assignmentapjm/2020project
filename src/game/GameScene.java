@@ -19,6 +19,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
@@ -53,6 +55,7 @@ public class GameScene {
 	private MenuItem[] playerMoneyMI;
 	private MenuItem potMI;
 	private Pane cardPane;
+	private Text dispWinner;
 
 	private Player[] players;
 	private Player ownPlayer;
@@ -160,9 +163,8 @@ public class GameScene {
 			int subRound = 0;
 			while (subRound < 4) {
 
-				numPlayersPlayed++;
-				
 				if (!players[currentPlayer].hasFolded()) {
+					numPlayersPlayed++;
 
 					amountToCall = getMaxAmToCall() - players[currentPlayer].getAmountCalled();
 
@@ -224,6 +226,13 @@ public class GameScene {
 			// End of Round
 			// Check who won
 			assignPot(); // Assigns pot to a player
+			//Sleep for 5 seconds after each end round
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			checkEliminated(); // Check if someone was eliminated
 
 			// Game Ends
@@ -339,7 +348,7 @@ public class GameScene {
 		this.bigBlind = INITIAL_BIG_BLIND;
 
 		deck = new Deck();
-
+		
 		dealerCards = deck.dealCards(5);
 		String dealerCardsString = "";
 		for (int i = 0; i < 5; i++) {
@@ -467,10 +476,8 @@ public class GameScene {
 
 	private boolean checkAllCalled() {
 		for (int i = 0; i < playerNum; i++) {
-			if (!players[i].hasFolded()){
-				if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
-					return false;
-				}
+			if (players[i].getAmountCalled() != getMaxAmToCall() && players[i].getCurrentMoney() != 0) {
+				return false;
 			}
 		}
 		return true;
@@ -646,13 +653,6 @@ public class GameScene {
 				if (player.getPlayerPosition() == 0){	// Server
 					Platform.runLater(() -> {
 						System.out.println("SERVER HAS LOST");
-
-						try {
-							sendStat();
-						} catch (FileNotFoundException e) {
-							System.err.println("File not found exception");
-						}
-
 						gameEnded = true;
 						stage.setScene(MainMenu.getScene());
 					});
@@ -720,6 +720,16 @@ public class GameScene {
 
 		potMI.setMinWidth(100);
 		playerMoneyMI[maxI].setMinWidth(100);
+		
+		//Announce Winner
+		dispWinner.setText("The winner is Player " + (maxI+1));
+		//Reveal All Cards
+		for (Player player: players) {
+			if (player.getPlayerPosition() != ownPlayer.getPlayerPosition()) {
+				playerCardImages[player.getPlayerPosition()][0].setImage(player.getCards()[0].getCardImage().getImage());
+				playerCardImages[player.getPlayerPosition()][1].setImage(player.getCards()[1].getCardImage().getImage());
+			}
+		}
 	}
 
 	// -----------------------------------------
@@ -730,10 +740,11 @@ public class GameScene {
 	private void resetScene(){
 		// Initialize delay duration
 		double delayDuration = 0;
+		dispWinner.setText("");
 
 		Platform.runLater(() -> {
 			for (int i=0; i<5; i++){
-				dealerCardImages[i].setImage(null);;
+				dealerCardImages[i].setImage(null);
 			}
 			for (int i=0; i<playerNum; i++){
 				playerCardImages[i][0].setImage(null);
@@ -850,6 +861,13 @@ public class GameScene {
 		createActionControl(root);
 
 		disableActions();
+		
+		//Display winner when round ends
+		dispWinner = new Text("");
+		dispWinner.setFill(Color.WHITE);
+		dispWinner.setFont(Font.font(20));
+		dispWinner.setLayoutX(325);
+		dispWinner.setLayoutY(425);
 
 		// Main game pane
 		cardPane = new Pane();
@@ -897,6 +915,7 @@ public class GameScene {
 
 		cardPane.getChildren().add(dealerBox);
 		cardPane.getChildren().addAll(playerFrames);
+		cardPane.getChildren().add(dispWinner);
 
 
 		// Set the center deck which is always upside down
