@@ -239,7 +239,6 @@ public class GameScene {
 			if (playerNum == 1) {
 				Platform.runLater(() -> {
 					System.out.println("YOU WON");
-					
 					try {
 						sendStat();
 					} catch (FileNotFoundException e) {
@@ -867,7 +866,7 @@ public class GameScene {
 		dispWinner.setFill(Color.WHITE);
 		dispWinner.setFont(Font.font(20));
 		dispWinner.setLayoutX(325);
-		dispWinner.setLayoutY(425);
+		dispWinner.setLayoutY(225);
 
 		// Main game pane
 		cardPane = new Pane();
