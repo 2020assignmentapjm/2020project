@@ -11,6 +11,11 @@ public class Hand {
     private final int HAND_SIZE = 7;
 
 
+    /*
+    * Input: Two arrays of Cards
+    * Function creates hand including players cards and flow
+    * Output: None
+     */
     public Hand(Card[] tableCards, Card[] playerCards) {
         hand = new Card[HAND_SIZE];
 
@@ -24,6 +29,13 @@ public class Hand {
         }
     }
 
+
+    /*
+      * Input: None
+      * Function converts a hand to a double value, to decide which hand is the best hand
+      * Output: Double
+      *
+     */
     public double getHandValue() {
         double value;
 

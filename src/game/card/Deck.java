@@ -10,10 +10,18 @@ public class Deck{
     private ArrayList<String> cards;
     private int numOfCardInDeck;
 
+
+    //Deck constructor
     public Deck(){
         resetDeck();
     }
 
+
+    /*
+    * Input: int (number of cards to be dealt)
+    * Randomly generates an array of cards for (players and dealer)
+    * Output: array of cards
+     */
     public Card[] dealCards(int numCards) {
         Random rand = new Random();
         Card[] tmp = new Card[numCards];
@@ -30,6 +38,11 @@ public class Deck{
         return tmp;
     }
 
+    /*
+    * Input: None
+    * Function resets deck, as if starting a new round.
+    * Output: None
+     */
     public void resetDeck() {
         cards = new ArrayList<String>( Arrays.asList(
         "AH","2H","3H","4H","5H","6H","7H","8H","9H","TH","JH","QH","KH",
