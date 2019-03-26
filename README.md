@@ -18,10 +18,10 @@ Have Fun!
 
 ### TO RUN
 
-'''
+```groovy
 gradle build
 gradle run
-'''
+```
 
 ### MADE BY
 
